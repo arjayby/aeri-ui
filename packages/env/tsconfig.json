@@ -1,0 +1,3 @@
+{
+  "extends": "@aeri-ui/config/tsconfig.base.json"
+}
