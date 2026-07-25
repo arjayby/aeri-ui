@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@aeri-ui/ui/components/button";
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
 type CopyableCommandProps = {
@@ -16,16 +18,20 @@ export function CopyableCommand({ label, value }: CopyableCommandProps) {
 	}
 
 	return (
-		<div className="flex items-start justify-between gap-3 overflow-x-auto rounded-[var(--radius)] bg-muted p-3 text-sm">
-			<code>{value}</code>
-			<button
+		<div className="flex min-w-0 items-center justify-between gap-4 rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-sm">
+			<code className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-xs">
+				{value}
+			</code>
+			<Button
 				aria-label={`Copy ${label}`}
-				className="shrink-0 rounded border bg-background px-2 py-1"
+				className="shrink-0 rounded-lg"
 				onClick={copy}
+				size="icon-sm"
 				type="button"
+				variant="ghost"
 			>
-				{copied ? "Copied" : "Copy"}
-			</button>
+				{copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+			</Button>
 		</div>
 	);
 }

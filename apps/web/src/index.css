@@ -1,3 +1,122 @@
 @import "@aeri-ui/ui/globals.css";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+
+:root {
+	--background: oklch(0.985 0.002 247);
+	--foreground: oklch(0.17 0.006 247);
+	--card: oklch(1 0 0);
+	--card-foreground: var(--foreground);
+	--popover: oklch(1 0 0);
+	--popover-foreground: var(--foreground);
+	--primary: oklch(0.2 0.007 247);
+	--primary-foreground: oklch(0.985 0.002 247);
+	--secondary: oklch(0.955 0.004 247);
+	--secondary-foreground: var(--foreground);
+	--muted: oklch(0.95 0.004 247);
+	--muted-foreground: oklch(0.51 0.012 247);
+	--accent: oklch(0.93 0.018 236);
+	--accent-foreground: oklch(0.25 0.025 236);
+	--border: oklch(0.89 0.006 247);
+	--input: oklch(0.89 0.006 247);
+	--ring: oklch(0.65 0.1 231);
+	--radius: 0.75rem;
+}
+
+.dark {
+	--background: oklch(0.105 0.003 247);
+	--foreground: oklch(0.955 0.003 247);
+	--card: oklch(0.135 0.005 247);
+	--card-foreground: var(--foreground);
+	--popover: oklch(0.145 0.006 247);
+	--popover-foreground: var(--foreground);
+	--primary: oklch(0.96 0.003 247);
+	--primary-foreground: oklch(0.13 0.004 247);
+	--secondary: oklch(0.19 0.006 247);
+	--secondary-foreground: var(--foreground);
+	--muted: oklch(0.18 0.006 247);
+	--muted-foreground: oklch(0.67 0.01 247);
+	--accent: oklch(0.24 0.025 231);
+	--accent-foreground: oklch(0.91 0.035 231);
+	--border: oklch(1 0 0 / 10%);
+	--input: oklch(1 0 0 / 14%);
+	--ring: oklch(0.72 0.1 231);
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	min-width: 320px;
+	background:
+		radial-gradient(
+			circle at 50% -20%,
+			color-mix(in oklch, var(--ring) 8%, transparent),
+			transparent 34rem
+		),
+		var(--background);
+}
+
+::selection {
+	background: color-mix(in oklch, var(--ring) 28%, transparent);
+}
+
+summary::-webkit-details-marker {
+	display: none;
+}
+
+.aeri-grid {
+	background-image:
+		linear-gradient(
+			to right,
+			color-mix(in oklch, var(--foreground) 5%, transparent) 1px,
+			transparent 1px
+		),
+		linear-gradient(
+			to bottom,
+			color-mix(in oklch, var(--foreground) 5%, transparent) 1px,
+			transparent 1px
+		);
+	background-size: 48px 48px;
+}
+
+.aeri-noise {
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+}
+
+.aeri-docs-body {
+	color: var(--foreground);
+}
+
+.aeri-docs-body h2 {
+	margin-top: 3.5rem;
+	scroll-margin-top: 6rem;
+	font-size: 1.5rem;
+	font-weight: 500;
+	letter-spacing: -0.03em;
+}
+
+.aeri-docs-body p,
+.aeri-docs-body li {
+	color: var(--muted-foreground);
+	line-height: 1.8;
+}
+
+.aeri-docs-body a {
+	color: var(--foreground);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 4px;
+}
+
+.aeri-docs-body pre {
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: color-mix(in oklch, var(--muted) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}
