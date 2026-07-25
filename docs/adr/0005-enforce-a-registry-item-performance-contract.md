@@ -1,0 +1,3 @@
+# Enforce a Registry Item performance contract
+
+Every published Registry Item must satisfy an automated performance and accessibility contract in its canonical demo: no recurring timer or animation-frame work after settling; a first visual response to input within 100 milliseconds; no attributable animation frame longer than 50 milliseconds under the agreed test profile; and a fully usable reduced-motion mode that suppresses nonessential motion. Animation should use `transform` and `opacity` by default, while properties that trigger layout or paint require an explicit justification and focused verification. These limits turn Aeri UI's performance claim into a release criterion rather than a subjective aspiration.
