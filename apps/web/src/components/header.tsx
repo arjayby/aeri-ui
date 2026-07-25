@@ -21,7 +21,7 @@ export default function Header() {
 							</Link>
 						);
 					})}
-			</nav>
+				</nav>
 				<div className="flex items-center gap-2">
 					<DocumentationSearch />
 					<ModeToggle />

@@ -19,7 +19,9 @@ export function proxy(request: NextRequest) {
 	if (isMarkdownPreferred(request)) {
 		const documentationResult = rewriteDocumentation(request.nextUrl.pathname);
 		if (documentationResult) {
-			return NextResponse.rewrite(new URL(documentationResult, request.nextUrl));
+			return NextResponse.rewrite(
+				new URL(documentationResult, request.nextUrl),
+			);
 		}
 	}
 

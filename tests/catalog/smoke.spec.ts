@@ -61,7 +61,9 @@ test("Builder can search documentation and navigate to a result", async ({
 	await page.getByRole("button", { name: "Hello World" }).click();
 
 	await expect(page).toHaveURL(/\/docs$/);
-	await expect(page.getByRole("heading", { name: "Hello World" })).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "Hello World" }),
+	).toBeVisible();
 });
 
 test("Builder receives an empty state for documentation searches", async ({
@@ -70,9 +72,7 @@ test("Builder receives an empty state for documentation searches", async ({
 	await page.goto("/docs");
 
 	await page.getByRole("button", { name: "Search" }).click();
-	await page
-		.getByPlaceholder("Search")
-		.fill("no matching documentation");
+	await page.getByPlaceholder("Search").fill("no matching documentation");
 
 	await expect(page.getByText("No results found")).toBeVisible();
 });
@@ -88,7 +88,9 @@ test("Builder can query the local documentation index", async ({ request }) => {
 	);
 });
 
-test("Builder can access machine readable documentation", async ({ request }) => {
+test("Builder can access machine readable documentation", async ({
+	request,
+}) => {
 	const [
 		index,
 		full,
@@ -98,16 +100,16 @@ test("Builder can access machine readable documentation", async ({ request }) =>
 		markdownSuffix,
 		image,
 	] = await Promise.all([
-			request.get("/llms.txt"),
-			request.get("/llms-full.txt"),
-			request.get("/llms.mdx/docs/content.md"),
-			request.get("/llms.mdx/docs/test/content.md"),
-			request.get("/docs/test", {
-				headers: { Accept: "text/markdown" },
-			}),
-			request.get("/docs/test.md"),
-			request.get("/og/docs/image.png"),
-		]);
+		request.get("/llms.txt"),
+		request.get("/llms-full.txt"),
+		request.get("/llms.mdx/docs/content.md"),
+		request.get("/llms.mdx/docs/test/content.md"),
+		request.get("/docs/test", {
+			headers: { Accept: "text/markdown" },
+		}),
+		request.get("/docs/test.md"),
+		request.get("/og/docs/image.png"),
+	]);
 
 	for (const response of [
 		index,
@@ -130,7 +132,9 @@ test("Builder can access machine readable documentation", async ({ request }) =>
 	expect(image.headers()["content-type"]).toContain("image/png");
 });
 
-test("Catalog documentation has a canonical public address", async ({ page }) => {
+test("Catalog documentation has a canonical public address", async ({
+	page,
+}) => {
 	await page.goto("/docs");
 
 	await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
