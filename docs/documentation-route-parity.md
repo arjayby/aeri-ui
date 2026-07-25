@@ -1,6 +1,6 @@
 # Documentation route parity
 
-The unified Catalog at `https://aeriui.dev` is the canonical public destination for every route formerly served by the standalone Fumadocs application. The legacy application remains in the repository during migration, but it is not the public destination.
+The unified Catalog at `https://aeriui.dev` is the canonical public destination for every route formerly served by the standalone Fumadocs application. The standalone application was removed after the migration verification recorded below.
 
 | Legacy route | Unified Catalog destination | Verification |
 | --- | --- | --- |
