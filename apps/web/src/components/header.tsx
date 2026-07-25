@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 
+import { DocumentationSearch } from "./documentation-search";
 import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
@@ -20,8 +21,9 @@ export default function Header() {
 							</Link>
 						);
 					})}
-				</nav>
+			</nav>
 				<div className="flex items-center gap-2">
+					<DocumentationSearch />
 					<ModeToggle />
 				</div>
 			</div>
