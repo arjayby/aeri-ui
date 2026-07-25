@@ -38,6 +38,20 @@ test("Builder can read code examples in documentation", async ({ page }) => {
 	);
 });
 
+test("Builder can find the project trust guidance in the Catalog", async ({
+	page,
+}) => {
+	for (const [path, heading] of [
+		["contributing", "Contributing to Aeri UI"],
+		["governance", "Aeri UI Governance"],
+		["security", "Security Policy"],
+		["privacy", "Privacy Notice"],
+	]) {
+		await page.goto(`/docs/${path}`);
+		await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+	}
+});
+
 test("Builder receives guidance for a missing Catalog document", async ({
 	page,
 }) => {
@@ -72,7 +86,7 @@ test("Builder receives an empty state for documentation searches", async ({
 	await page.goto("/docs");
 
 	await page.getByRole("button", { name: "Search" }).click();
-	await page.getByPlaceholder("Search").fill("no matching documentation");
+	await page.getByPlaceholder("Search").fill("xqzv-absent-catalog-page");
 
 	await expect(page.getByText("No results found")).toBeVisible();
 });

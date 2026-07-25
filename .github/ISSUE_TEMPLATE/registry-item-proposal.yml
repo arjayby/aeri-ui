@@ -1,0 +1,66 @@
+name: Registry Item proposal
+description: Propose a Component or Block for editorial review before implementation.
+title: "Registry Item proposal: "
+labels:
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Aeri UI is a Curated Registry. External Registry Items require approval before implementation and publication remains a maintainer editorial decision.
+  - type: textarea
+    id: builder-need
+    attributes:
+      label: Builder need
+      description: Describe the Builder problem, who encounters it, and why existing shadcn or Aeri UI source does not address it.
+    validations:
+      required: true
+  - type: textarea
+    id: interaction
+    attributes:
+      label: Intended interaction
+      description: Describe the user scenarios and the proposed Component or Block behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: Public API
+      description: Sketch the exported interface, configuration, callbacks, and composition anatomy.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List runtime and Registry dependencies. Explain why each dependency is necessary.
+    validations:
+      required: true
+  - type: textarea
+    id: accessibility
+    attributes:
+      label: Accessibility
+      description: Describe keyboard, focus, semantic, screen reader, responsive, RTL, and reduced motion behavior or risks.
+    validations:
+      required: true
+  - type: textarea
+    id: motion
+    attributes:
+      label: Motion
+      description: Describe interaction led motion, the reduced motion mode, and why the motion supports the Builder task.
+    validations:
+      required: true
+  - type: textarea
+    id: performance
+    attributes:
+      label: Performance cost
+      description: Identify client boundaries, rendering work, assets, and expected cost. Explain the plan for meeting the Performance Contract.
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Contribution agreement
+      options:
+        - label: I will wait for approval before implementing this external Registry Item and will contribute it under the MIT License.
+          required: true
