@@ -5,7 +5,13 @@ export default function Home() {
 	return (
 		<main>
 			<Button type="button">Consumer Project fixture</Button>
-			<AeriButton type="button">Installed Aeri Button</AeriButton>
+			<AeriButton type="button">Primary action</AeriButton>
+			<AeriButton type="button" variant="secondary">
+				Secondary action
+			</AeriButton>
+			<AeriButton type="button" variant="destructive">
+				Delete item
+			</AeriButton>
 		</main>
 	);
 }
