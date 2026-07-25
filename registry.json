@@ -1,0 +1,9 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"name": "@aeri-ui",
+	"homepage": "https://aeriui.dev",
+	"include": [
+		"registry/components/registry.json",
+		"registry/blocks/registry.json"
+	]
+}
