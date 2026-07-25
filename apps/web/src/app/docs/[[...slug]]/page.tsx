@@ -10,7 +10,7 @@ import type { ReactNode } from "react";
 
 import { DocumentationNavigation } from "@/components/documentation-navigation";
 import { getMDXComponents } from "@/components/mdx";
-import { source } from "@/lib/source";
+import { getPageImageUrl, source } from "@/lib/source";
 
 type Props = {
 	params: Promise<{ slug?: string[] }>;
@@ -75,5 +75,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	return {
 		title: page.data.title,
 		description: page.data.description,
+		alternates: {
+			canonical: page.url,
+		},
+		openGraph: {
+			images: getPageImageUrl(page).url,
+		},
 	};
 }

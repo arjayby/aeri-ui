@@ -16,8 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+	metadataBase: new URL("https://aeriui.dev"),
 	title: "Aeri UI Catalog",
 	description: "Installable interface source for React applications.",
+	alternates: {
+		canonical: "/",
+	},
 };
 
 export default function RootLayout({
