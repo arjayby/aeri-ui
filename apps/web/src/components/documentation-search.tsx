@@ -1,9 +1,10 @@
 "use client";
 
+import { Button } from "@aeri-ui/ui/components/button";
+import type { DefaultSearchDialogProps } from "fumadocs-ui/components/dialog/search-default";
 import { Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
-import type { DefaultSearchDialogProps } from "fumadocs-ui/components/dialog/search-default";
+import { useEffect, useState } from "react";
 
 type SearchDialogProps = Omit<DefaultSearchDialogProps, "dialogHandle">;
 
@@ -24,20 +25,34 @@ const SearchDialog = dynamic<SearchDialogProps>(
 export function DocumentationSearch() {
 	const [open, setOpen] = useState(false);
 
+	useEffect(() => {
+		function openSearch(event: KeyboardEvent) {
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+				event.preventDefault();
+				setOpen(true);
+			}
+		}
+
+		window.addEventListener("keydown", openSearch);
+		return () => window.removeEventListener("keydown", openSearch);
+	}, []);
+
 	return (
 		<>
-			<button
+			<Button
 				aria-label="Search"
-				className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				className="rounded-full px-2 text-muted-foreground sm:px-3"
 				onClick={() => setOpen(true)}
+				size="sm"
 				type="button"
+				variant="ghost"
 			>
-				<Search aria-hidden="true" className="size-4" />
-				<span>Search</span>
-				<kbd className="hidden rounded border px-1.5 py-0.5 text-muted-foreground text-xs sm:inline">
+				<Search aria-hidden="true" data-icon="inline-start" />
+				<span className="hidden sm:inline">Search</span>
+				<kbd className="hidden rounded border border-border/70 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">
 					⌘K
 				</kbd>
-			</button>
+			</Button>
 			{open ? (
 				<SearchDialog api="/api/search" onOpenChange={setOpen} open={open} />
 			) : null}

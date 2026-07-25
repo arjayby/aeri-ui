@@ -10,7 +10,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 		<RootProvider search={{ enabled: false }} theme={{ enabled: false }}>
 			<ThemeProvider
 				attribute="class"
-				defaultTheme="system"
+				defaultTheme="dark"
 				enableSystem
 				disableTransitionOnChange
 			>

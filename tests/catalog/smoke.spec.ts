@@ -1,154 +1,172 @@
 import { expect, test } from "@playwright/test";
 
-test("Builder can open the Catalog", async ({ page }) => {
+test("Builder can open the Aeri UI landing page", async ({ page }) => {
 	await page.goto("/");
 
-	await expect(page).toHaveTitle("Aeri UI Catalog");
+	await expect(page).toHaveTitle("Aeri UI");
 	await expect(
-		page.getByRole("heading", { name: "Aeri UI Catalog" }),
+		page.getByRole("heading", {
+			name: "Polished interactions, ready to make yours.",
+		}),
 	).toBeVisible();
 	await expect(
-		page.getByText("Installable interface source for React applications."),
-	).toBeVisible();
+		page.getByRole("navigation", { name: "Main" }).getByRole("link", {
+			name: "Docs",
+		}),
+	).toHaveAttribute("href", "/docs");
+	await expect(
+		page
+			.getByRole("navigation", { name: "Main" })
+			.getByRole("link", { name: "Components", exact: true }),
+	).toHaveAttribute("href", "/components");
+	await expect(
+		page
+			.getByRole("navigation", { name: "Main" })
+			.getByRole("link", { name: "Blocks", exact: true }),
+	).toHaveAttribute("href", "/blocks");
 });
 
-test("Builder can read documentation within the Catalog shell", async ({
-	page,
-}) => {
+test("Builder can read the documentation introduction", async ({ page }) => {
 	await page.goto("/docs");
 
-	await expect(page.getByRole("link", { name: "Home" })).toBeVisible();
-	await expect(page.getByRole("link", { name: "Documentation" })).toBeVisible();
 	await expect(
-		page.getByRole("heading", { name: "Hello World" }),
+		page.getByRole("heading", { name: "Introduction", exact: true }),
 	).toBeVisible();
-	await expect(page.getByText("Your first document")).toBeVisible();
 	await expect(
-		page.getByRole("link", { name: "Learn more about Fumadocs" }),
-	).toHaveAttribute("href", "https://fumadocs.dev");
+		page.getByRole("heading", { name: "How the registry works" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("link", { name: "Browse All", exact: true }).first(),
+	).toHaveAttribute("href", "/components");
+	await expect(
+		page.getByRole("complementary").getByRole("link", { name: "Button" }),
+	).toHaveAttribute("href", "/components/button");
 });
 
-test("Builder can read code examples in documentation", async ({ page }) => {
-	await page.goto("/docs/test");
+test("Builder can browse the component catalog", async ({ page }) => {
+	await page.goto("/components");
 
-	await expect(page).toHaveTitle("Components");
-	await expect(page.getByRole("heading", { name: "Components" })).toBeVisible();
-	await expect(page.locator("pre")).toContainText(
-		'console.log("Hello World");',
+	await expect(
+		page.getByRole("heading", { name: "Components", exact: true }),
+	).toBeVisible();
+	await expect(page.getByRole("link", { name: "View Button" })).toHaveAttribute(
+		"href",
+		"/components/button",
 	);
+	await expect(
+		page.getByRole("button", { name: "Save changes" }),
+	).toBeVisible();
 });
 
-test("Builder can find the project trust guidance in the Catalog", async ({
-	page,
-}) => {
-	for (const [path, heading] of [
-		["contributing", "Contributing to Aeri UI"],
-		["governance", "Aeri UI Governance"],
-		["security", "Security Policy"],
-		["privacy", "Privacy Notice"],
+test("Builder can inspect and install Button", async ({ page }) => {
+	await page.goto("/components/button");
+
+	await expect(
+		page.getByRole("heading", { name: "Button", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "Live preview" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("tab", { exact: true, name: "npm" }),
+	).toHaveAttribute("aria-selected", "true");
+	await expect(
+		page.locator("pre").filter({ hasText: "ButtonPrimitive" }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "API reference" }),
+	).toBeVisible();
+});
+
+test("Builder sees a finished Blocks empty state", async ({ page }) => {
+	await page.goto("/blocks");
+
+	await expect(
+		page.getByRole("heading", { name: "Blocks", exact: true }),
+	).toBeVisible();
+	await expect(page.getByText("Blocks are coming soon")).toBeVisible();
+});
+
+test("Removed public routes no longer exist", async ({ request }) => {
+	for (const path of [
+		"/items/button",
+		"/docs/privacy",
+		"/docs/security",
+		"/docs/governance",
+		"/docs/contributing",
 	]) {
-		await page.goto(`/docs/${path}`);
-		await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+		const response = await request.get(path);
+		expect(response.status()).toBe(404);
 	}
 });
 
-test("Builder receives guidance for a missing Catalog document", async ({
-	page,
-}) => {
-	await page.goto("/docs/missing-page");
-
-	await expect(
-		page.getByRole("heading", { name: "This page could not be found." }),
-	).toBeVisible();
-	await expect(
-		page.getByRole("link", { name: "Browse documentation" }),
-	).toHaveAttribute("href", "/docs");
-});
-
-test("Builder can search documentation and navigate to a result", async ({
+test("Builder can search every current public destination", async ({
 	page,
 }) => {
 	await page.goto("/docs");
 
 	await page.getByRole("button", { name: "Search" }).click();
-	await page.getByPlaceholder("Search").fill("Hello");
-	await page.getByRole("button", { name: "Hello World" }).click();
+	await page.getByPlaceholder("Search").fill("Button");
+	await page.getByRole("button", { name: "Button" }).click();
 
-	await expect(page).toHaveURL(/\/docs$/);
-	await expect(
-		page.getByRole("heading", { name: "Hello World" }),
-	).toBeVisible();
+	await expect(page).toHaveURL(/\/components\/button$/);
 });
 
-test("Builder receives an empty state for documentation searches", async ({
-	page,
-}) => {
+test("Builder receives an empty state for searches", async ({ page }) => {
 	await page.goto("/docs");
 
 	await page.getByRole("button", { name: "Search" }).click();
-	await page.getByPlaceholder("Search").fill("xqzv-absent-catalog-page");
+	await page.getByPlaceholder("Search").fill("xqzv");
 
 	await expect(page.getByText("No results found")).toBeVisible();
 });
 
-test("Builder can query the local documentation index", async ({ request }) => {
-	const response = await request.get("/api/search?query=Hello");
+test("Builder can query the unified search index", async ({ request }) => {
+	const response = await request.get("/api/search?query=Button");
 
 	expect(response.ok()).toBeTruthy();
 	expect(await response.json()).toEqual(
 		expect.arrayContaining([
-			expect.objectContaining({ type: "page", url: "/docs" }),
+			expect.objectContaining({
+				type: "page",
+				url: "/components/button",
+			}),
 		]),
 	);
 });
 
-test("Builder can access machine readable documentation", async ({
+test("Builder can access the machine readable introduction", async ({
 	request,
 }) => {
-	const [
-		index,
-		full,
-		rootDocument,
-		componentDocument,
-		markdownPreferred,
-		markdownSuffix,
-		image,
-	] = await Promise.all([
-		request.get("/llms.txt"),
-		request.get("/llms-full.txt"),
-		request.get("/llms.mdx/docs/content.md"),
-		request.get("/llms.mdx/docs/test/content.md"),
-		request.get("/docs/test", {
-			headers: { Accept: "text/markdown" },
-		}),
-		request.get("/docs/test.md"),
-		request.get("/og/docs/image.png"),
-	]);
+	const [index, full, rootDocument, markdownPreferred, image] =
+		await Promise.all([
+			request.get("/llms.txt"),
+			request.get("/llms-full.txt"),
+			request.get("/llms.mdx/docs/content.md"),
+			request.get("/docs", {
+				headers: { Accept: "text/markdown" },
+			}),
+			request.get("/og/docs/image.png"),
+		]);
 
 	for (const response of [
 		index,
 		full,
 		rootDocument,
-		componentDocument,
 		markdownPreferred,
-		markdownSuffix,
 		image,
 	]) {
 		expect(response.ok()).toBeTruthy();
 	}
 
-	expect(await index.text()).toContain("Hello World");
-	expect(await full.text()).toContain("# Components (/docs/test)");
-	expect(await rootDocument.text()).toContain("# Hello World (/docs)");
-	expect(await componentDocument.text()).toContain("# Components (/docs/test)");
-	expect(await markdownPreferred.text()).toContain("# Components (/docs/test)");
-	expect(await markdownSuffix.text()).toContain("# Components (/docs/test)");
+	expect(await index.text()).toContain("Introduction");
+	expect(await full.text()).toContain("# Introduction (/docs)");
+	expect(await rootDocument.text()).toContain("# Introduction (/docs)");
+	expect(await markdownPreferred.text()).toContain("# Introduction (/docs)");
 	expect(image.headers()["content-type"]).toContain("image/png");
 });
 
-test("Catalog documentation has a canonical public address", async ({
-	page,
-}) => {
+test("Documentation has a canonical public address", async ({ page }) => {
 	await page.goto("/docs");
 
 	await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(

@@ -20,7 +20,7 @@ test("Builder can retrieve the generated Button registry payload", async ({
 test("Builder can evaluate Button and choose an installation command", async ({
 	page,
 }) => {
-	await page.goto("/items/button");
+	await page.goto("/components/button");
 
 	await expect(
 		page.getByRole("heading", { exact: true, name: "Button" }),
@@ -31,19 +31,23 @@ test("Builder can evaluate Button and choose an installation command", async ({
 	await expect(
 		page.getByText("npx shadcn@latest add @aeri-ui/button"),
 	).toBeVisible();
+	await page.getByRole("tab", { exact: true, name: "pnpm" }).click();
 	await expect(
 		page.getByText("pnpm dlx shadcn@latest add @aeri-ui/button"),
 	).toBeVisible();
+	await page.getByRole("tab", { exact: true, name: "yarn" }).click();
 	await expect(
 		page.getByText("yarn dlx shadcn@latest add @aeri-ui/button"),
 	).toBeVisible();
+	await page.getByRole("tab", { exact: true, name: "bun" }).click();
 	await expect(
 		page.getByText("bunx --bun shadcn@latest add @aeri-ui/button"),
 	).toBeVisible();
+	await page.getByText("Controls", { exact: true }).click();
 	await expect(page.getByLabel("Consumer Theme")).toBeVisible();
 	await expect(page.getByLabel("Disabled")).toBeVisible();
 	await expect(
-		page.getByRole("button", { name: "Copy npm command" }),
+		page.getByRole("button", { name: "Copy bun installation command" }),
 	).toBeVisible();
 	await expect(page.getByRole("heading", { name: "Usage" })).toBeVisible();
 

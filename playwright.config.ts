@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const webPort = 3001;
+const webPort = Number(process.env.PLAYWRIGHT_PORT ?? 3001);
 
 export default defineConfig({
 	testDir: ".",
@@ -19,8 +19,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: "pnpm --filter web start",
+		command: `pnpm --filter web exec next start --port ${webPort}`,
 		url: `http://127.0.0.1:${webPort}`,
-		reuseExistingServer: false,
+		reuseExistingServer: !process.env.CI,
 	},
 });
