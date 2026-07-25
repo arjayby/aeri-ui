@@ -1,0 +1,3 @@
+# Block merges and releases on quality contracts
+
+Pull requests will be blocked by formatting, linting, type checking, production build, unit and interaction tests, registry validation and build, clean-fixture installation of changed items, and applicable accessibility and performance checks. Releases will additionally require clean installation of the full Launch Set through npm, pnpm, Yarn, and Bun; Chromium, Firefox, and WebKit behavior smoke tests; the complete keyboard, reduced-motion, accessibility, and performance suites; and verification that generated registry payloads match their authoritative source and documentation.

@@ -1,0 +1,3 @@
+# Enforce a Catalog performance contract
+
+The production Catalog will keep p75 Largest Contentful Paint at or below 2.5 seconds, Interaction to Next Paint at or below 200 milliseconds, and Cumulative Layout Shift at or below 0.1. Agreed CI profiles will require at least 95 Lighthouse performance and 100 automated accessibility on key routes. Listings will use static Live Preview representations, while interactive Live Previews, syntax highlighting, search, and controls load only where needed; route-level JavaScript and CSS budgets will be established from the first optimized production build and then enforced against regressions.
