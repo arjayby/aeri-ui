@@ -1,6 +1,14 @@
-# aeri-ui
+# Aeri UI
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, and more.
+Aeri UI is a public, MIT licensed Curated Registry of installable interface source for React applications. The canonical project repository is [github.com/arjayby/aeri-ui](https://github.com/arjayby/aeri-ui).
+
+## Trust and contribution
+
+- [Contributing](./CONTRIBUTING.md) explains Registry Item proposals, publication contracts, and editorial review.
+- [Governance](./docs/governance.md) records the Curated Registry policy.
+- [Security](./SECURITY.md) describes private vulnerability reporting and coordinated disclosure.
+- [Privacy](./PRIVACY.md) explains the Catalog's limited aggregate Vercel telemetry.
+- [MIT License](./LICENSE) grants the project license.
 
 ## Features
 
