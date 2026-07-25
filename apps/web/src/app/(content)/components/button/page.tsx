@@ -150,7 +150,7 @@ export default function ButtonPage() {
 						</p>
 						<CopyButton label="Button source" value={buttonSource} />
 					</div>
-					<pre className="max-h-[42rem] overflow-auto p-5 text-sm leading-7">
+					<pre className="whitespace-pre-wrap break-words p-5 text-sm leading-7">
 						<code>{buttonSource}</code>
 					</pre>
 				</div>
@@ -176,6 +176,34 @@ export default function ButtonPage() {
 							</tr>
 						</thead>
 						<tbody>
+							<tr className="border-border/70 border-t">
+								<td className="px-5 py-4 font-mono">variant</td>
+								<td className="px-5 py-4 font-mono text-muted-foreground">
+									&quot;default&quot; | &quot;secondary&quot; |
+									&quot;destructive&quot;
+								</td>
+								<td className="px-5 py-4 text-muted-foreground">
+									Chooses the action&apos;s semantic emphasis.
+								</td>
+							</tr>
+							<tr className="border-border/70 border-t">
+								<td className="px-5 py-4 font-mono">pending</td>
+								<td className="px-5 py-4 font-mono text-muted-foreground">
+									boolean
+								</td>
+								<td className="px-5 py-4 text-muted-foreground">
+									Disables repeated activation and shows pending feedback.
+								</td>
+							</tr>
+							<tr className="border-border/70 border-t">
+								<td className="px-5 py-4 font-mono">pendingText</td>
+								<td className="px-5 py-4 font-mono text-muted-foreground">
+									ReactNode
+								</td>
+								<td className="px-5 py-4 text-muted-foreground">
+									Supplies localized feedback while work is pending.
+								</td>
+							</tr>
 							<tr className="border-border/70 border-t">
 								<td className="px-5 py-4 font-mono">className</td>
 								<td className="px-5 py-4 font-mono text-muted-foreground">
