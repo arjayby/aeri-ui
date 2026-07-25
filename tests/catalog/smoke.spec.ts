@@ -1,4 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIResponse } from "@playwright/test";
+
+async function expectSearchResult(response: APIResponse, url: string) {
+	expect(response.ok()).toBeTruthy();
+	expect(await response.json()).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({
+				type: "page",
+				url,
+			}),
+		]),
+	);
+}
 
 test("Builder can open the Aeri UI landing page", async ({ page }) => {
 	await page.goto("/");
@@ -87,17 +99,35 @@ test("Builder sees a finished Blocks empty state", async ({ page }) => {
 	await expect(page.getByText("Blocks are coming soon")).toBeVisible();
 });
 
-test("Removed public routes no longer exist", async ({ request }) => {
-	for (const path of [
-		"/items/button",
-		"/docs/privacy",
-		"/docs/security",
-		"/docs/governance",
-		"/docs/contributing",
-	]) {
-		const response = await request.get(path);
-		expect(response.status()).toBe(404);
+test("Builder can read every migrated document in the unified Catalog", async ({
+	page,
+	request,
+}) => {
+	const documents = [
+		["/docs/contributing", "Contributing to Aeri UI"],
+		["/docs/governance", "Aeri UI Governance"],
+		["/docs/privacy", "Privacy Notice"],
+		["/docs/security", "Security Policy"],
+		["/docs/test", "Components"],
+	] as const;
+
+	for (const [path, title] of documents) {
+		await page.goto(path);
+		await expect(
+			page.getByRole("heading", { name: title, exact: true }),
+		).toBeVisible();
+		await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+			"href",
+			`https://aeriui.dev${path}`,
+		);
+
+		const markdownResponse = await request.get(`${path}.md`);
+		expect(markdownResponse.ok()).toBeTruthy();
+		expect(await markdownResponse.text()).toContain(`# ${title} (${path})`);
 	}
+
+	const missingResponse = await request.get("/docs/no-longer-published");
+	expect(missingResponse.status()).toBe(404);
 });
 
 test("Builder can search every current public destination", async ({
@@ -122,17 +152,18 @@ test("Builder receives an empty state for searches", async ({ page }) => {
 });
 
 test("Builder can query the unified search index", async ({ request }) => {
-	const response = await request.get("/api/search?query=Button");
+	const [buttonResponse, privacyResponse, helloResponse, introductionMarkdown] =
+		await Promise.all([
+			request.get("/api/search?query=Button"),
+			request.get("/api/search?query=Privacy"),
+			request.get("/api/search?query=Hello"),
+			request.get("/llms.mdx/docs/content.md"),
+		]);
 
-	expect(response.ok()).toBeTruthy();
-	expect(await response.json()).toEqual(
-		expect.arrayContaining([
-			expect.objectContaining({
-				type: "page",
-				url: "/components/button",
-			}),
-		]),
-	);
+	await expectSearchResult(buttonResponse, "/components/button");
+	await expectSearchResult(privacyResponse, "/docs/privacy");
+	await expectSearchResult(helloResponse, "/docs");
+	expect(await introductionMarkdown.text()).toContain("Welcome to the docs!");
 });
 
 test("Builder can access the machine readable introduction", async ({
@@ -173,4 +204,15 @@ test("Documentation has a canonical public address", async ({ page }) => {
 		"href",
 		"https://aeriui.dev/docs",
 	);
+});
+
+test("Builder sees a migrated document in the production Catalog", async ({
+	page,
+}) => {
+	await page.goto("/docs/security");
+
+	await expect(page).toHaveScreenshot("documentation-security.png", {
+		fullPage: true,
+		maxDiffPixels: 3_000,
+	});
 });
