@@ -27,6 +27,33 @@ pnpm run dev
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
 
+## Delivery baseline
+
+From a fresh checkout, enable Corepack and install the locked workspace dependencies:
+
+```bash
+corepack enable
+pnpm install --frozen-lockfile
+```
+
+The non-interactive quality commands are:
+
+```bash
+pnpm run format:check
+pnpm run lint
+pnpm run check-types
+pnpm run build
+```
+
+The production Catalog smoke test uses Playwright. Install Chromium once on a development machine, then run the test:
+
+```bash
+pnpm exec playwright install chromium
+pnpm run test:catalog
+```
+
+`pnpm run test:consumer` copies the supported Next.js Consumer Project fixture into a temporary directory, installs its locked public dependencies, type-checks it, builds it, and then discards it. It never reads from Aeri UI workspace packages.
+
 ## UI Customization
 
 React web apps in this stack share shadcn/ui primitives through `packages/ui`.
