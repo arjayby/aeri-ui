@@ -21,7 +21,8 @@
 		],
 		"paths": {
 			"@/*": ["./src/*"],
-			"@aeri-ui/ui/*": ["../../packages/ui/src/*"]
+			"@aeri-ui/ui/*": ["../../packages/ui/src/*"],
+			"collections/*": ["./.source/*"]
 		}
 	},
 	"include": [
