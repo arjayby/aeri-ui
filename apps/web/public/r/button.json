@@ -1,0 +1,42 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button",
+  "title": "Button",
+  "author": "Aeri UI",
+  "description": "A semantic Button with restrained press feedback.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "files": [
+    {
+      "path": "registry/components/button/button.tsx",
+      "content": "import { Button as ButtonPrimitive } from \"@base-ui/react/button\";\nimport * as React from \"react\";\n\ntype ButtonProps = ButtonPrimitive.Props;\n\nconst Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(\n\t{ className, ...props },\n\tref,\n) {\n\treturn (\n\t\t<ButtonPrimitive\n\t\t\tclassName={[\n\t\t\t\t\"inline-flex min-h-9 items-center justify-center rounded-[var(--radius)] bg-primary px-3 font-medium text-primary-foreground text-sm transition-transform duration-150 hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none\",\n\t\t\t\tclassName,\n\t\t\t]\n\t\t\t\t.filter(Boolean)\n\t\t\t\t.join(\" \")}\n\t\t\tdata-slot=\"aeri-button\"\n\t\t\tref={ref}\n\t\t\t{...props}\n\t\t/>\n\t);\n});\n\nexport { Button, type ButtonProps };\n",
+      "type": "registry:ui",
+      "target": "components/aeri/button.tsx"
+    }
+  ],
+  "meta": {
+    "lifecycle": "preview",
+    "preview": {
+      "label": "Button preview",
+      "initialLabel": "Save changes",
+      "interaction": "Press to acknowledge the action",
+      "fixture": "preview.tsx"
+    },
+    "example": "import { Button } from \"@/components/aeri/button\";\n\n<Button>Save changes</Button>",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-07-25",
+        "summary": "Initial Preview Item release."
+      }
+    ],
+    "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/button/button.tsx"
+  },
+  "docs": "## Purpose\n\nUse Button for a discrete action. It keeps the Consumer Theme by using shadcn semantic tokens and gives a short press acknowledgement without a motion runtime.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`Button` accepts Base UI Button props and `className`. It forwards its ref and its anatomy is one Base UI Button primitive. It does not add variants or animation controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Button's only runtime dependency. Button reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nThe underlying Base UI Button preserves native button semantics, keyboard activation, focus visibility, disabled behavior, and form support.\n\n## Motion and performance\n\nPress feedback is a CSS transform and transition. It respects `prefers-reduced-motion` and adds no animation dependency or idle work.\n\n## Customization\n\nOverride semantic colors, typography, and radius through the Consumer Theme. Use `className` for local layout changes. The source does not change global styles.\n\n## Compatibility\n\nButton supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It is responsive and inherits RTL direction from its Consumer Project.",
+  "categories": [
+    "component",
+    "action"
+  ],
+  "type": "registry:ui"
+}

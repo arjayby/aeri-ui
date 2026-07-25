@@ -9,6 +9,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "turbo run dev",
+		"registry:build": "pnpm --filter @aeri-ui/ui exec shadcn build registry.json --cwd ../.. --output apps/web/public/r",
+		"registry:check": "pnpm --filter @aeri-ui/ui exec shadcn registry validate registry.json --cwd ../..",
 		"build": "turbo run build",
 		"check-types": "turbo run check-types",
 		"format:check": "biome format .",
@@ -33,10 +35,13 @@
 	},
 	"devDependencies": {
 		"@aeri-ui/config": "workspace:*",
+		"@base-ui/react": "^1.6.0",
 		"@playwright/test": "^1.62.0",
+		"@types/react": "catalog:",
 		"@biomejs/biome": "^2.5.2",
 		"@types/node": "^22.13.14",
 		"tsx": "^4.22.5",
+		"react": "catalog:",
 		"turbo": "^2.10.2",
 		"typescript": "catalog:",
 		"vercel": "^54.18.6"

@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 const webPort = 3001;
 
 export default defineConfig({
-	testDir: "./tests/catalog",
+	testDir: ".",
+	testMatch: ["tests/catalog/**/*.spec.ts", "registry/**/*.spec.ts"],
 	fullyParallel: true,
 	forbidOnly: Boolean(process.env.CI),
 	retries: process.env.CI ? 2 : 0,
