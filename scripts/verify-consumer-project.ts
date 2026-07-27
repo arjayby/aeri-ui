@@ -14,13 +14,12 @@ import { fileURLToPath } from "node:url";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, "..");
 const fixtureDirectory = join(repositoryRoot, "fixtures", "consumer-project");
-const registryPayloadPath = join(
+const registryPayloadDirectory = join(
 	repositoryRoot,
 	"apps",
 	"web",
 	"public",
 	"r",
-	"button.json",
 );
 const consumerProjectDirectory = mkdtempSync(
 	join(tmpdir(), "aeri-ui-consumer-project-"),
@@ -44,9 +43,13 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 
 async function serveRegistry() {
 	const server = createServer((request, response) => {
-		if (request.url === "/r/button.json") {
+		const itemName = request.url?.match(/^\/r\/(button|tabs)\.json$/)?.[1];
+
+		if (itemName) {
 			response.writeHead(200, { "content-type": "application/json" });
-			response.end(readFileSync(registryPayloadPath));
+			response.end(
+				readFileSync(join(registryPayloadDirectory, `${itemName}.json`)),
+			);
 			return;
 		}
 
@@ -112,6 +115,7 @@ try {
 	await runPnpm(["install", "--frozen-lockfile"]);
 	await runPnpm(["exec", "shadcn", "--help"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
 
 	if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
 		throw new Error(
@@ -130,6 +134,20 @@ try {
 	if (!readFileSync(installedButtonPath, "utf8").includes("export { Button")) {
 		throw new Error(
 			"Installing Button did not write the Aeri owned Button source.",
+		);
+	}
+
+	const installedTabsPath = join(
+		consumerProjectDirectory,
+		"src",
+		"components",
+		"aeri",
+		"tabs.tsx",
+	);
+
+	if (!readFileSync(installedTabsPath, "utf8").includes("export {\n\tTabs,")) {
+		throw new Error(
+			"Installing Tabs did not write the Aeri owned Tabs source.",
 		);
 	}
 
