@@ -92,6 +92,50 @@
         "content"
       ],
       "type": "registry:ui"
+    },
+    {
+      "name": "tabs",
+      "title": "Tabs",
+      "author": "Aeri UI",
+      "description": "Semantic Tabs with a moving active indicator and directional panel transitions.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/components/tabs/tabs.tsx",
+          "type": "registry:ui",
+          "target": "components/aeri/tabs.tsx"
+        }
+      ],
+      "meta": {
+        "catalog": {
+          "boundary": "client",
+          "implementation": "native",
+          "publishedAt": "2026-07-27"
+        },
+        "lifecycle": "preview",
+        "preview": {
+          "label": "Tabs preview",
+          "interaction": "Move between related panels with the keyboard or pointer.",
+          "fixture": "preview.tsx"
+        },
+        "example": "import {\n  Tabs,\n  TabsIndicator,\n  TabsList,\n  TabsPanel,\n  TabsTab,\n} from \"@/components/aeri/tabs\";\n\n<Tabs defaultValue=\"overview\">\n  <TabsList>\n    <TabsTab value=\"overview\">Overview</TabsTab>\n    <TabsTab value=\"activity\">Activity</TabsTab>\n    <TabsIndicator />\n  </TabsList>\n  <TabsPanel value=\"overview\">Overview content</TabsPanel>\n  <TabsPanel value=\"activity\">Activity content</TabsPanel>\n</Tabs>",
+        "changelog": [
+          {
+            "version": "0.1.0",
+            "date": "2026-07-27",
+            "summary": "Initial Preview Item release."
+          }
+        ],
+        "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/tabs/tabs.tsx"
+      },
+      "docs": "## Purpose\n\nUse Tabs to switch between related, peer sections without navigating away from the current context. Use a short, stable label for each tab and keep the panel content focused. It inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\nCompose `Tabs`, `TabsList`, `TabsTab`, `TabsIndicator`, and `TabsPanel`. `Tabs` accepts Base UI Root props including controlled `value`, uncontrolled `defaultValue`, `onValueChange`, and `orientation`. `TabsList` accepts Base UI keyboard behavior such as `activateOnFocus` and `loopFocus`. `TabsTab` accepts a required `value`, disabled state, native button attributes, and forwards its ref. `TabsIndicator` is placed inside `TabsList` and follows the active tab. `TabsPanel` accepts a matching `value`, keeps Base UI panel semantics, forwards its ref, and uses restrained directional transitions. The API exposes no raw motion controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Tabs' only runtime dependency. Tabs reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nThe Base UI primitives provide tab, tablist, and tabpanel semantics, matching labels and IDs, arrow key focus navigation, Enter and Space activation when focus activation is disabled, Home and End navigation, visible keyboard focus, and disabled tab behavior. Use accessible labels and ensure each `TabsTab` has a matching `TabsPanel`.\n\n## Motion and performance\n\nThe indicator transitions with CSS translate and width or height. Its size must track arbitrary Builder labels and vertically oriented tabs, making these limited layout transitions necessary; the browser fixture verifies the frame budget. Panels use short CSS opacity and translate transitions that follow Base UI's activation direction. Reduced motion removes nonessential transitions while preserving immediate selection feedback. There is no motion runtime, recurring idle timer, or animation frame loop after the indicator settles.\n\n## Consumer Theme\n\nTabs uses Consumer Theme semantic colors, typography, radius, and appearance. Override tokens in the Consumer Project and use `className` for local layout changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nTabs has no fixed width and reflows with its container. Tab labels and panel content are supplied by the Builder, so they can be localized. The indicator uses Base UI logical measurements and inherited direction, and the panel transition reverses for backward keyboard or pointer movement.\n\n## Compatibility\n\nTabs supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+      "categories": [
+        "component",
+        "navigation"
+      ],
+      "type": "registry:ui"
     }
   ]
 }
