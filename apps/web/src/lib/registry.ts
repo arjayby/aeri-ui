@@ -1,13 +1,7 @@
-import registry from "../../../../registry/components/button/registry.json";
 import generatedButton from "../../public/r/button.json";
+import { getRegistryItemByName } from "./catalog";
 
-const registryButton = registry.items.find((item) => item.name === "button");
-
-if (!registryButton) {
-	throw new Error("The Button Registry Item record is missing.");
-}
-
-const button: (typeof registry.items)[number] = registryButton;
+const button = getRegistryItemByName("button");
 const buttonSource = generatedButton.files[0]?.content;
 
 if (!buttonSource) {

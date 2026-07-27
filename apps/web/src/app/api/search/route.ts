@@ -1,6 +1,6 @@
 import { createSearchAPI } from "fumadocs-core/search/server";
 
-import { button } from "@/lib/registry";
+import { catalogItems, getCategoryLabel } from "@/lib/catalog";
 import { getLLMText, source } from "@/lib/source";
 
 export const { GET } = createSearchAPI("simple", {
@@ -19,25 +19,37 @@ export const { GET } = createSearchAPI("simple", {
 			description:
 				"Polished interaction components you can install, own, and adapt.",
 			content:
-				"components catalog actions interaction source shadcn Next.js React",
+				"components catalog actions forms navigation overlays feedback data display content interaction source shadcn Next.js React",
 			url: "/components",
 			breadcrumbs: ["Components"],
-		},
-		{
-			title: button.title,
-			description: button.description,
-			content: `${button.docs} ${button.meta.example}`,
-			url: "/components/button",
-			breadcrumbs: ["Components", "Button"],
 		},
 		{
 			title: "Blocks",
 			description:
 				"Production ready interface sections composed from Aeri UI components.",
-			content: "blocks catalog application patterns coming soon",
+			content:
+				"blocks catalog actions forms navigation overlays feedback data display content application patterns",
 			url: "/blocks",
 			breadcrumbs: ["Blocks"],
 		},
+		...catalogItems.map((item) => ({
+			title: item.title,
+			description: item.description,
+			content: [
+				item.collection,
+				item.implementation,
+				item.boundary,
+				item.lifecycle,
+				item.hasBaseUi ? "Base UI" : "",
+				...item.categories.map(getCategoryLabel),
+				item.searchContent,
+			].join(" "),
+			url: item.url,
+			breadcrumbs: [
+				item.collection === "component" ? "Components" : "Blocks",
+				item.title,
+			],
+		})),
 	],
 	language: "english",
 });

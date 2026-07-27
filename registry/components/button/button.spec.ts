@@ -20,12 +20,16 @@ test("Builder can retrieve the generated Button registry payload", async ({
 
 test("Builder can evaluate Button and choose an installation command", async ({
 	page,
+	context,
 }) => {
+	await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 	await page.goto("/components/button");
 
 	await expect(
 		page.getByRole("heading", { exact: true, name: "Button" }),
 	).toBeVisible();
+	await expect(page.getByText("Preview", { exact: true })).toBeVisible();
+	await expect(page.getByText("New", { exact: true })).toBeVisible();
 	await expect(
 		page.getByRole("button", { name: "Save changes" }),
 	).toBeVisible();
@@ -53,6 +57,15 @@ test("Builder can evaluate Button and choose an installation command", async ({
 	await expect(
 		page.getByRole("button", { name: "Copy bun installation command" }),
 	).toBeVisible();
+	await page
+		.getByRole("button", { name: "Copy bun installation command" })
+		.click();
+	await expect(
+		page.getByRole("button", { name: "Copied bun installation command" }),
+	).toBeVisible();
+	expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+		"bunx --bun shadcn@latest add @aeri-ui/button",
+	);
 	await expect(page.getByRole("heading", { name: "Usage" })).toBeVisible();
 	await expect(
 		page.getByRole("heading", { name: "API reference" }),

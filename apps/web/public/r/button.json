@@ -16,6 +16,11 @@
     }
   ],
   "meta": {
+    "catalog": {
+      "boundary": "client",
+      "implementation": "native",
+      "publishedAt": "2026-07-25"
+    },
     "lifecycle": "preview",
     "preview": {
       "label": "Button preview",

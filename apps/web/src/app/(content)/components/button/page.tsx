@@ -5,8 +5,9 @@ import Link from "next/link";
 import { ContentPageHeader } from "@/components/content-page-header";
 import { CopyButton } from "@/components/copy-button";
 import { InstallCommand } from "@/components/install-command";
+import { LazyButtonPreview } from "@/components/lazy-button-preview";
+import { catalogItems } from "@/lib/catalog";
 import { button, buttonSource } from "@/lib/registry";
-import { ButtonPreview } from "../../../../../../../registry/components/button/preview";
 
 const documentation = button.docs
 	.replace(/^## /, "")
@@ -19,6 +20,14 @@ const documentation = button.docs
 	.filter((section) => section.heading !== "Installation");
 
 const lifecycle = button.meta.lifecycle as string;
+const catalogItem = catalogItems.find((item) => item.name === button.name);
+
+if (!catalogItem) {
+	throw new Error("The Button Catalog record is missing.");
+}
+
+const isNew = catalogItem.isNew;
+
 const preview = button.meta.preview as {
 	initialLabel: string;
 	interaction: string;
@@ -52,7 +61,10 @@ export default function ButtonPage() {
 					Components
 				</Link>
 				<ContentPageHeader
-					badge={lifecycle === "preview" ? "Preview component" : lifecycle}
+					badges={[
+						lifecycle === "preview" ? "Preview" : lifecycle,
+						...(isNew ? ["New"] : []),
+					]}
 					description={button.description}
 					title={button.title}
 				/>
@@ -72,7 +84,7 @@ export default function ButtonPage() {
 					<p className="text-muted-foreground text-sm">{preview.interaction}</p>
 				</div>
 				<div className="aeri-grid rounded-[2rem] border border-border/70 bg-muted/20 p-5 sm:p-8">
-					<ButtonPreview label={preview.initialLabel} />
+					<LazyButtonPreview label={preview.initialLabel} />
 				</div>
 			</section>
 
@@ -91,7 +103,7 @@ export default function ButtonPage() {
 						Add the complete Button source with the shadcn CLI.
 					</p>
 				</div>
-				<InstallCommand />
+				<InstallCommand itemName={button.name} />
 			</section>
 
 			<section
