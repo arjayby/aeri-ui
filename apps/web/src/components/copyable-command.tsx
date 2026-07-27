@@ -11,10 +11,15 @@ type CopyableCommandProps = {
 
 export function CopyableCommand({ label, value }: CopyableCommandProps) {
 	const [copied, setCopied] = useState(false);
+	const buttonLabel = copied ? `Copied ${label}` : `Copy ${label}`;
 
 	async function copy() {
-		await navigator.clipboard.writeText(value);
-		setCopied(true);
+		try {
+			await navigator.clipboard.writeText(value);
+			setCopied(true);
+		} catch {
+			setCopied(false);
+		}
 	}
 
 	return (
@@ -23,7 +28,7 @@ export function CopyableCommand({ label, value }: CopyableCommandProps) {
 				{value}
 			</code>
 			<Button
-				aria-label={`Copy ${label}`}
+				aria-label={buttonLabel}
 				className="shrink-0 rounded-lg"
 				onClick={copy}
 				size="icon-sm"
@@ -31,6 +36,7 @@ export function CopyableCommand({ label, value }: CopyableCommandProps) {
 				variant="ghost"
 			>
 				{copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+				<span className="sr-only">{buttonLabel}</span>
 			</Button>
 		</div>
 	);

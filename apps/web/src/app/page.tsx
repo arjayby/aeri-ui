@@ -6,7 +6,6 @@ import { InstallCommand } from "@/components/install-command";
 import { LandingHeader } from "@/components/landing-header";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
-import { ButtonPreview } from "../../../../registry/components/button/preview";
 
 const steps = [
 	{
@@ -157,7 +156,9 @@ export default function Home() {
 								</Link>
 							</div>
 							<div className="aeri-grid flex min-h-96 items-center justify-center border-border/70 border-t bg-muted/20 p-6 lg:border-t-0 lg:border-l">
-								<ButtonPreview compact label="Save changes" />
+								<span className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm shadow-sm">
+									Save changes
+								</span>
 							</div>
 						</div>
 					</div>

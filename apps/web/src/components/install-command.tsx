@@ -5,17 +5,26 @@ import { useState } from "react";
 
 import { CopyableCommand } from "./copyable-command";
 
-const commands = {
-	npm: "npx shadcn@latest add @aeri-ui/button",
-	pnpm: "pnpm dlx shadcn@latest add @aeri-ui/button",
-	yarn: "yarn dlx shadcn@latest add @aeri-ui/button",
-	bun: "bunx --bun shadcn@latest add @aeri-ui/button",
-} as const;
+function getCommands(itemName: string) {
+	return {
+		npm: `npx shadcn@latest add @aeri-ui/${itemName}`,
+		pnpm: `pnpm dlx shadcn@latest add @aeri-ui/${itemName}`,
+		yarn: `yarn dlx shadcn@latest add @aeri-ui/${itemName}`,
+		bun: `bunx --bun shadcn@latest add @aeri-ui/${itemName}`,
+	} as const;
+}
 
-type PackageManager = keyof typeof commands;
+type PackageManager = keyof ReturnType<typeof getCommands>;
 
-export function InstallCommand({ compact = false }: { compact?: boolean }) {
+export function InstallCommand({
+	compact = false,
+	itemName = "button",
+}: {
+	compact?: boolean;
+	itemName?: string;
+}) {
 	const [manager, setManager] = useState<PackageManager>("npm");
+	const commands = getCommands(itemName);
 
 	return (
 		<div className="flex flex-col gap-3">

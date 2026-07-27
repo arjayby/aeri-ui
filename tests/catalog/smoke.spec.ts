@@ -61,13 +61,23 @@ test("Builder can browse the component catalog", async ({ page }) => {
 	await expect(
 		page.getByRole("heading", { name: "Components", exact: true }),
 	).toBeVisible();
+	await expect(page.getByRole("heading", { name: "Actions" })).toBeVisible();
 	await expect(page.getByRole("link", { name: "View Button" })).toHaveAttribute(
 		"href",
 		"/components/button",
 	);
-	await expect(
-		page.getByRole("button", { name: "Save changes" }),
-	).toBeVisible();
+	const buttonCard = page.getByRole("article").filter({ hasText: "Button" });
+	await expect(buttonCard.getByText("Preview", { exact: true })).toBeVisible();
+	await expect(buttonCard.getByText("New", { exact: true })).toBeVisible();
+
+	await page.getByRole("button", { name: "Client boundary" }).click();
+	await expect(page.getByRole("link", { name: "View Button" })).toBeVisible();
+	await page.getByRole("button", { name: "Uses Base UI" }).click();
+	await expect(page.getByRole("link", { name: "View Button" })).toBeVisible();
+	await page.getByRole("button", { name: "Native implementation" }).click();
+	await expect(page.getByRole("link", { name: "View Button" })).toBeVisible();
+	await page.getByRole("button", { name: "Recently published" }).click();
+	await expect(page.getByRole("link", { name: "View Button" })).toBeVisible();
 });
 
 test("Builder can inspect and install Button", async ({ page }) => {
@@ -90,13 +100,14 @@ test("Builder can inspect and install Button", async ({ page }) => {
 	).toBeVisible();
 });
 
-test("Builder sees a finished Blocks empty state", async ({ page }) => {
+test("Builder can browse the Block catalog", async ({ page }) => {
 	await page.goto("/blocks");
 
 	await expect(
 		page.getByRole("heading", { name: "Blocks", exact: true }),
 	).toBeVisible();
-	await expect(page.getByText("Blocks are coming soon")).toBeVisible();
+	await expect(page.getByRole("button", { name: "Actions" })).toBeVisible();
+	await expect(page.getByText("No Blocks match these filters.")).toBeVisible();
 });
 
 test("Builder can read every migrated document in the unified Catalog", async ({

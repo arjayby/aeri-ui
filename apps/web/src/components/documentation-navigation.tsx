@@ -4,26 +4,34 @@ import { cn } from "@aeri-ui/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const groups = [
-	{
-		label: "Getting Started",
-		links: [{ href: "/docs/", label: "Introduction" }],
-	},
-	{
-		label: "Components",
-		links: [
-			{ href: "/components", label: "Browse All" },
-			{ href: "/components/button", label: "Button" },
-		],
-	},
-	{
-		label: "Blocks",
-		links: [{ href: "/blocks", label: "Browse All" }],
-	},
-] as const;
+import type { CatalogItem } from "@/lib/catalog";
 
-export function DocumentationNavigation() {
+type NavigationItem = Pick<CatalogItem, "collection" | "title" | "url">;
+
+export function DocumentationNavigation({
+	items,
+}: {
+	items: NavigationItem[];
+}) {
 	const pathname = usePathname();
+	const groups = [
+		{
+			label: "Getting Started",
+			links: [{ href: "/docs/", label: "Introduction" }],
+		},
+		...(["component", "block"] as const).map((collection) => ({
+			label: collection === "component" ? "Components" : "Blocks",
+			links: [
+				{
+					href: collection === "component" ? "/components" : "/blocks",
+					label: "Browse All",
+				},
+				...items
+					.filter((item) => item.collection === collection)
+					.map((item) => ({ href: item.url, label: item.title })),
+			],
+		})),
+	];
 	return (
 		<nav aria-label="Documentation" className="flex flex-col gap-7">
 			{groups.map((group) => (
@@ -47,7 +55,7 @@ export function DocumentationNavigation() {
 												? "bg-muted text-foreground"
 												: "text-muted-foreground",
 										)}
-										href={link.href}
+										href={link.href as never}
 									>
 										{link.label}
 									</Link>
