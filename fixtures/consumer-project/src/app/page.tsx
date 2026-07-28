@@ -14,6 +14,12 @@ import {
 	TabsTab,
 } from "@/components/aeri/tabs";
 import { Switch, SwitchThumb } from "@/components/aeri/switch";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/aeri/tooltip";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -56,6 +62,14 @@ export default function Home() {
 					Receive release notes
 				</label>
 			</form>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger>More tooltip info</TooltipTrigger>
+					<TooltipContent id="consumer-tooltip-description">
+						More information about this setting.
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 		</main>
 	);
 }

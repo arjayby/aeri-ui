@@ -4,7 +4,8 @@
 		"button/registry.json",
 		"accordion/registry.json",
 		"tabs/registry.json",
-		"switch/registry.json"
+		"switch/registry.json",
+		"tooltip/registry.json"
 	],
 	"items": []
 }

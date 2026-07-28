@@ -1,0 +1,44 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "tooltip",
+			"type": "registry:ui",
+			"title": "Tooltip",
+			"description": "A semantic Tooltip with a subtle focus and hover presence transition.",
+			"author": "Aeri UI",
+			"dependencies": ["@base-ui/react"],
+			"files": [
+				{
+					"path": "tooltip.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/tooltip.tsx"
+				}
+			],
+			"categories": ["component", "overlay"],
+			"docs": "## Purpose\n\nUse Tooltip to give concise, supplementary context for an already labelled control. Do not put essential information, interactive content, or a control's only accessible name in a Tooltip. It inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\nCompose `TooltipProvider`, `Tooltip`, `TooltipTrigger`, and `TooltipContent`. Provider shares an opening delay among adjacent Tooltips and defaults to 500 milliseconds. Tooltip preserves Base UI controlled and uncontrolled `open` state, dismissal behavior, and trigger composition. Trigger accepts Base UI trigger props including `delay`, `closeDelay`, `closeOnClick`, `disabled`, and `render`. Content accepts Base UI popup props plus `side`, `sideOffset`, `align`, and `alignOffset`; it defaults to top, centered, with an 8 pixel offset. The API exposes no raw motion controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Tooltip's only runtime dependency. Tooltip reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nThe Aeri wrapper supplies tooltip semantics and connects the trigger to its Content with `aria-describedby`. Base UI supplies keyboard focus behavior, Escape dismissal, and outside press dismissal. Keep the trigger keyboard reachable and give it its own concise accessible name. Tooltips are supplementary and are not a suitable way to expose required touch interaction or critical instructions.\n\n## Motion and performance\n\nContent uses one 150 millisecond opacity and transform presence transition, beginning only after the provider or trigger delay. Reduced motion removes that nonessential transition while preserving immediate open and dismissal state. There is no motion runtime, recurring timer, or animation frame loop after the transition settles.\n\n## Consumer Theme\n\nTooltip uses Consumer Theme semantic colors, typography, radius, and appearance. Override tokens in the Consumer Project and use `className` for local presentation changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nTooltip constrains its content width and repositions around viewport collisions. Supply concise localized text as Content children. Base UI handles logical inline placement when `side` uses `inline-start` or `inline-end`; the default top placement is direction independent.\n\n## Compatibility\n\nTooltip supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "client",
+					"implementation": "native",
+					"publishedAt": "2026-07-28"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "Tooltip preview",
+					"interaction": "Focus or hover the control to reveal supporting context.",
+					"fixture": "preview.tsx"
+				},
+				"example": "import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from \"@/components/aeri/tooltip\";\n\n<TooltipProvider>\n  <Tooltip>\n    <TooltipTrigger>More information</TooltipTrigger>\n    <TooltipContent>Additional context</TooltipContent>\n  </Tooltip>\n</TooltipProvider>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-28",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/tooltip/tooltip.tsx"
+			}
+		}
+	]
+}
