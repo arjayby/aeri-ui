@@ -4,6 +4,7 @@ import generatedInput from "../../public/r/input.json";
 import generatedNumberTicker from "../../public/r/number-ticker.json";
 import generatedSwitch from "../../public/r/switch.json";
 import generatedTabs from "../../public/r/tabs.json";
+import generatedTextSwap from "../../public/r/text-swap.json";
 import generatedTooltip from "../../public/r/tooltip.json";
 import { getRegistryItemByName } from "./catalog";
 
@@ -19,6 +20,8 @@ const switchItem = getRegistryItemByName("switch");
 const switchSource = generatedSwitch.files[0]?.content;
 const tabs = getRegistryItemByName("tabs");
 const tabsSource = generatedTabs.files[0]?.content;
+const textSwap = getRegistryItemByName("text-swap");
+const textSwapSource = generatedTextSwap.files[0]?.content;
 const tooltip = getRegistryItemByName("tooltip");
 const tooltipSource = generatedTooltip.files[0]?.content;
 
@@ -46,6 +49,10 @@ if (!tabsSource) {
 	throw new Error("The generated Tabs source is missing.");
 }
 
+if (!textSwapSource) {
+	throw new Error("The generated Text Swap source is missing.");
+}
+
 if (!tooltipSource) {
 	throw new Error("The generated Tooltip source is missing.");
 }
@@ -63,6 +70,8 @@ export {
 	switchSource,
 	tabs,
 	tabsSource,
+	textSwap,
+	textSwapSource,
 	tooltip,
 	tooltipSource,
 };
