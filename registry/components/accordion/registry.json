@@ -1,0 +1,45 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "accordion",
+			"type": "registry:ui",
+			"title": "Accordion",
+			"description": "Accessible disclosure content with measured, restrained expansion.",
+			"author": "Aeri UI",
+			"dependencies": ["@base-ui/react"],
+			"files": [
+				{
+					"path": "accordion.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/accordion.tsx"
+				}
+			],
+			"categories": ["component", "content"],
+			"docs": "## Purpose\n\nUse Accordion to progressively disclose related content, such as FAQs, settings explanations, or supporting details. Use the default single expansion behavior when one answer should hold attention, or set `multiple` when Builders should compare several sections. It inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\nCompose `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, and `AccordionPanel`. Give every Item a stable string `value`. Accordion accepts Base UI Root props: `value`, `defaultValue`, and `onValueChange` support controlled or uncontrolled state, while `multiple` enables several open Items. Item accepts `disabled`. The parts forward their refs and preserve Base UI props. The API exposes no motion controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Accordion's only runtime dependency. Accordion reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nBase UI supplies button triggers, headings, `aria-expanded`, panel relationships, regions, keyboard activation, visible focus, and disabled behavior. Provide concise Trigger labels and avoid using Accordion for content that must remain persistently visible.\n\n## Motion and performance\n\nThe Panel uses Base UI's measured height variable for one short native CSS height transition. Height is necessary to reveal content without clipping or a layout jump. Reduced motion makes the change immediate. There is no motion runtime, recurring timer, or animation frame loop after the transition settles.\n\n## Consumer Theme\n\nAccordion uses Consumer Theme semantic colors, typography, and radius. Override tokens in the Consumer Project and use `className` for local layout changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nAccordion has no fixed width and reflows with its container. Trigger and Panel content are supplied by the Builder, so they can be localized. It inherits text direction from the Consumer Project and uses a direction neutral disclosure indicator.\n\n## Compatibility\n\nAccordion supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "client",
+					"implementation": "native",
+					"publishedAt": "2026-07-28"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "Accordion preview",
+					"interaction": "Expand a question to reveal its answer",
+					"fixture": "preview.tsx"
+				},
+				"example": "import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from \"@/components/aeri/accordion\";\n\n<Accordion defaultValue={[\"shipping\"]}>\n  <AccordionItem value=\"shipping\">\n    <AccordionHeader>\n      <AccordionTrigger>When will my order arrive?</AccordionTrigger>\n    </AccordionHeader>\n    <AccordionPanel>Most orders arrive in three to five business days.</AccordionPanel>\n  </AccordionItem>\n</Accordion>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-28",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/accordion",
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/accordion/accordion.tsx"
+			}
+		}
+	]
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "accordion",
+  "title": "Accordion",
+  "author": "Aeri UI",
+  "description": "Accessible disclosure content with measured, restrained expansion.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "files": [
+    {
+      "path": "registry/components/accordion/accordion.tsx",
+      "content": "\"use client\";\n\nimport { Accordion as AccordionPrimitive } from \"@base-ui/react/accordion\";\nimport * as React from \"react\";\n\nfunction joinClasses(...classes: Array<string | undefined>) {\n\treturn classes.filter(Boolean).join(\" \");\n}\n\nfunction mergeClassName<State>(\n\tbase: string,\n\tclassName: string | ((state: State) => string | undefined) | undefined,\n) {\n\treturn (state: State) =>\n\t\tjoinClasses(\n\t\t\tbase,\n\t\t\ttypeof className === \"function\" ? className(state) : className,\n\t\t);\n}\n\ntype AccordionProps = AccordionPrimitive.Root.Props<string>;\ntype AccordionItemProps = AccordionPrimitive.Item.Props;\ntype AccordionHeaderProps = AccordionPrimitive.Header.Props;\ntype AccordionTriggerProps = AccordionPrimitive.Trigger.Props;\ntype AccordionPanelProps = AccordionPrimitive.Panel.Props;\n\nconst Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(\n\tfunction Accordion({ className, ...props }, ref) {\n\t\treturn (\n\t\t\t<AccordionPrimitive.Root\n\t\t\t\tclassName={mergeClassName<AccordionPrimitive.Root.State<string>>(\n\t\t\t\t\t\"divide-y divide-border\",\n\t\t\t\t\tclassName,\n\t\t\t\t)}\n\t\t\t\tdata-slot=\"aeri-accordion\"\n\t\t\t\tref={ref}\n\t\t\t\t{...props}\n\t\t\t/>\n\t\t);\n\t},\n);\n\nconst AccordionItem = React.forwardRef<HTMLDivElement, AccordionItemProps>(\n\tfunction AccordionItem({ className, ...props }, ref) {\n\t\treturn (\n\t\t\t<AccordionPrimitive.Item\n\t\t\t\tclassName={mergeClassName<AccordionPrimitive.Item.State>(\n\t\t\t\t\t\"py-1\",\n\t\t\t\t\tclassName,\n\t\t\t\t)}\n\t\t\t\tdata-slot=\"aeri-accordion-item\"\n\t\t\t\tref={ref}\n\t\t\t\t{...props}\n\t\t\t/>\n\t\t);\n\t},\n);\n\nconst AccordionHeader = React.forwardRef<\n\tHTMLHeadingElement,\n\tAccordionHeaderProps\n>(function AccordionHeader({ className, ...props }, ref) {\n\treturn (\n\t\t<AccordionPrimitive.Header\n\t\t\tclassName={mergeClassName<AccordionPrimitive.Header.State>(\"\", className)}\n\t\t\tdata-slot=\"aeri-accordion-header\"\n\t\t\tref={ref}\n\t\t\t{...props}\n\t\t/>\n\t);\n});\n\nconst AccordionTrigger = React.forwardRef<HTMLElement, AccordionTriggerProps>(\n\tfunction AccordionTrigger({ children, className, ...props }, ref) {\n\t\treturn (\n\t\t\t<AccordionPrimitive.Trigger\n\t\t\t\tclassName={mergeClassName<AccordionPrimitive.Trigger.State>(\n\t\t\t\t\t\"group flex min-h-11 w-full items-center justify-between gap-4 rounded-lg px-3 py-2 text-start font-medium text-sm outline-none transition-[background-color,color] duration-150 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none\",\n\t\t\t\t\tclassName,\n\t\t\t\t)}\n\t\t\t\tdata-slot=\"aeri-accordion-trigger\"\n\t\t\t\tref={ref}\n\t\t\t\t{...props}\n\t\t\t>\n\t\t\t\t{children}\n\t\t\t\t<span\n\t\t\t\t\taria-hidden=\"true\"\n\t\t\t\t\tclassName=\"flex size-5 shrink-0 items-center justify-center text-muted-foreground transition-transform duration-200 group-data-[panel-open]:rotate-45 motion-reduce:transition-none\"\n\t\t\t\t>\n\t\t\t\t\t+\n\t\t\t\t</span>\n\t\t\t</AccordionPrimitive.Trigger>\n\t\t);\n\t},\n);\n\nconst AccordionPanel = React.forwardRef<HTMLDivElement, AccordionPanelProps>(\n\tfunction AccordionPanel({ children, className, ...props }, ref) {\n\t\treturn (\n\t\t\t<AccordionPrimitive.Panel\n\t\t\t\tclassName={mergeClassName<AccordionPrimitive.Panel.State>(\n\t\t\t\t\t\"h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0 motion-reduce:transition-none\",\n\t\t\t\t\tclassName,\n\t\t\t\t)}\n\t\t\t\tdata-slot=\"aeri-accordion-panel\"\n\t\t\t\tref={ref}\n\t\t\t\t{...props}\n\t\t\t>\n\t\t\t\t<div className=\"px-3 pt-1 pb-3 text-muted-foreground text-sm leading-6\">\n\t\t\t\t\t{children}\n\t\t\t\t</div>\n\t\t\t</AccordionPrimitive.Panel>\n\t\t);\n\t},\n);\n\nexport {\n\tAccordion,\n\tAccordionHeader,\n\tAccordionItem,\n\tAccordionPanel,\n\tAccordionTrigger,\n\ttype AccordionHeaderProps,\n\ttype AccordionItemProps,\n\ttype AccordionPanelProps,\n\ttype AccordionProps,\n\ttype AccordionTriggerProps,\n};\n",
+      "type": "registry:ui",
+      "target": "components/aeri/accordion.tsx"
+    }
+  ],
+  "meta": {
+    "catalog": {
+      "boundary": "client",
+      "implementation": "native",
+      "publishedAt": "2026-07-28"
+    },
+    "lifecycle": "preview",
+    "preview": {
+      "label": "Accordion preview",
+      "interaction": "Expand a question to reveal its answer",
+      "fixture": "preview.tsx"
+    },
+    "example": "import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from \"@/components/aeri/accordion\";\n\n<Accordion defaultValue={[\"shipping\"]}>\n  <AccordionItem value=\"shipping\">\n    <AccordionHeader>\n      <AccordionTrigger>When will my order arrive?</AccordionTrigger>\n    </AccordionHeader>\n    <AccordionPanel>Most orders arrive in three to five business days.</AccordionPanel>\n  </AccordionItem>\n</Accordion>",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-07-28",
+        "summary": "Initial Preview Item release."
+      }
+    ],
+    "changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/accordion",
+    "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/accordion/accordion.tsx"
+  },
+  "docs": "## Purpose\n\nUse Accordion to progressively disclose related content, such as FAQs, settings explanations, or supporting details. Use the default single expansion behavior when one answer should hold attention, or set `multiple` when Builders should compare several sections. It inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\nCompose `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, and `AccordionPanel`. Give every Item a stable string `value`. Accordion accepts Base UI Root props: `value`, `defaultValue`, and `onValueChange` support controlled or uncontrolled state, while `multiple` enables several open Items. Item accepts `disabled`. The parts forward their refs and preserve Base UI props. The API exposes no motion controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Accordion's only runtime dependency. Accordion reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nBase UI supplies button triggers, headings, `aria-expanded`, panel relationships, regions, keyboard activation, visible focus, and disabled behavior. Provide concise Trigger labels and avoid using Accordion for content that must remain persistently visible.\n\n## Motion and performance\n\nThe Panel uses Base UI's measured height variable for one short native CSS height transition. Height is necessary to reveal content without clipping or a layout jump. Reduced motion makes the change immediate. There is no motion runtime, recurring timer, or animation frame loop after the transition settles.\n\n## Consumer Theme\n\nAccordion uses Consumer Theme semantic colors, typography, and radius. Override tokens in the Consumer Project and use `className` for local layout changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nAccordion has no fixed width and reflows with its container. Trigger and Panel content are supplied by the Builder, so they can be localized. It inherits text direction from the Consumer Project and uses a direction neutral disclosure indicator.\n\n## Compatibility\n\nAccordion supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+  "categories": [
+    "component",
+    "content"
+  ],
+  "type": "registry:ui"
+}
