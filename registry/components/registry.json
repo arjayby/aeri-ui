@@ -6,7 +6,8 @@
 		"input/registry.json",
 		"tabs/registry.json",
 		"switch/registry.json",
-		"tooltip/registry.json"
+		"tooltip/registry.json",
+		"number-ticker/registry.json"
 	],
 	"items": []
 }
