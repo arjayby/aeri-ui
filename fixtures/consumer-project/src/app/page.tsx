@@ -13,6 +13,7 @@ import {
 	TabsPanel,
 	TabsTab,
 } from "@/components/aeri/tabs";
+import { Switch, SwitchThumb } from "@/components/aeri/switch";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -47,6 +48,14 @@ export default function Home() {
 				<TabsPanel value="overview">Overview content</TabsPanel>
 				<TabsPanel value="activity">Activity content</TabsPanel>
 			</Tabs>
+			<form>
+				<label htmlFor="release-notes">
+					<Switch defaultChecked id="release-notes" name="release-notes">
+						<SwitchThumb />
+					</Switch>
+					Receive release notes
+				</label>
+			</form>
 		</main>
 	);
 }
