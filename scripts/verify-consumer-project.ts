@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|switch|tabs)\.json$/,
+			/^\/r\/(accordion|button|switch|tabs|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -357,6 +357,121 @@ async function verifyInstalledSwitch(url: string) {
 	}
 }
 
+async function verifyInstalledTooltip(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const trigger = page.getByRole("button", { name: "More tooltip info" });
+		const tooltip = page.getByRole("tooltip");
+
+		await trigger.evaluate((element) => {
+			element.addEventListener(
+				"focus",
+				() => {
+					const startedAt = performance.now();
+					let largestFrame = 0;
+					let previousFrame = startedAt;
+
+					requestAnimationFrame((frameTime) => {
+						element.setAttribute(
+							"data-response-time",
+							String(frameTime - startedAt),
+						);
+
+						const measureFrame = (currentFrame: number) => {
+							largestFrame = Math.max(
+								largestFrame,
+								currentFrame - previousFrame,
+							);
+							previousFrame = currentFrame;
+
+							if (currentFrame - startedAt < 450) {
+								requestAnimationFrame(measureFrame);
+								return;
+							}
+
+							element.setAttribute("data-largest-frame", String(largestFrame));
+						};
+
+						requestAnimationFrame(measureFrame);
+					});
+				},
+				{ once: true },
+			);
+		});
+		await trigger.focus();
+		await tooltip.waitFor({ state: "visible" });
+		await page.waitForTimeout(500);
+		const responseTime = Number(
+			await trigger.getAttribute("data-response-time"),
+		);
+		const largestFrame = Number(
+			await trigger.getAttribute("data-largest-frame"),
+		);
+		if (
+			!Number.isFinite(responseTime) ||
+			!Number.isFinite(largestFrame) ||
+			responseTime >= 100 ||
+			largestFrame >= 50
+		) {
+			throw new Error(
+				`The installed Tooltip exceeded its interaction budget: ${responseTime}ms response, ${largestFrame}ms frame.`,
+			);
+		}
+		const tooltipId = await tooltip.getAttribute("id");
+		if (
+			tooltipId !== "consumer-tooltip-description" ||
+			(await trigger.getAttribute("aria-describedby")) !== tooltipId
+		) {
+			throw new Error(
+				"The installed Tooltip did not connect its trigger and content for assistive technology.",
+			);
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		if (
+			(await tooltip.evaluate(
+				(element) => getComputedStyle(element).transitionProperty,
+			)) !== "none"
+		) {
+			throw new Error("The installed Tooltip did not suppress motion.");
+		}
+
+		await page.waitForTimeout(300);
+		const activeAnimations = await tooltip.evaluate(
+			(element) => element.getAnimations({ subtree: true }).length,
+		);
+		if (activeAnimations > 0) {
+			throw new Error("The installed Tooltip did not settle its animations.");
+		}
+
+		await page.keyboard.press("Escape");
+		await page.waitForTimeout(200);
+		if (
+			(await tooltip.isVisible()) ||
+			(await trigger.getAttribute("aria-describedby")) !== null
+		) {
+			throw new Error(
+				"The installed Tooltip did not dismiss cleanly with Escape.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Tooltip has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
@@ -403,6 +518,7 @@ try {
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tooltip", "--yes"]);
 
 	if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
 		throw new Error(
@@ -415,6 +531,7 @@ try {
 		["button", "export { Button"],
 		["switch", "export { Switch, SwitchThumb"],
 		["tabs", "export {\n\tTabs,"],
+		["tooltip", "export {\n\tTooltip,"],
 	] as const;
 
 	for (const [itemName, expectedExport] of installedSources) {
@@ -440,6 +557,7 @@ try {
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);
+	await verifyInstalledTooltip(consumerUrl);
 	console.log("Consumer Project fixture passed.");
 } finally {
 	await stopConsumerProject(consumerServer);

@@ -2,6 +2,7 @@ import generatedAccordion from "../../public/r/accordion.json";
 import generatedButton from "../../public/r/button.json";
 import generatedSwitch from "../../public/r/switch.json";
 import generatedTabs from "../../public/r/tabs.json";
+import generatedTooltip from "../../public/r/tooltip.json";
 import { getRegistryItemByName } from "./catalog";
 
 const accordion = getRegistryItemByName("accordion");
@@ -12,6 +13,8 @@ const switchItem = getRegistryItemByName("switch");
 const switchSource = generatedSwitch.files[0]?.content;
 const tabs = getRegistryItemByName("tabs");
 const tabsSource = generatedTabs.files[0]?.content;
+const tooltip = getRegistryItemByName("tooltip");
+const tooltipSource = generatedTooltip.files[0]?.content;
 
 if (!accordionSource) {
 	throw new Error("The generated Accordion source is missing.");
@@ -29,6 +32,10 @@ if (!tabsSource) {
 	throw new Error("The generated Tabs source is missing.");
 }
 
+if (!tooltipSource) {
+	throw new Error("The generated Tooltip source is missing.");
+}
+
 export {
 	accordion,
 	accordionSource,
@@ -38,4 +45,6 @@ export {
 	switchSource,
 	tabs,
 	tabsSource,
+	tooltip,
+	tooltipSource,
 };
