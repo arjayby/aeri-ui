@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|tabs)\.json$/,
+			/^\/r\/(accordion|button|switch|tabs)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -248,6 +248,115 @@ async function verifyInstalledAccordion(url: string) {
 	}
 }
 
+async function verifyInstalledSwitch(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const switchControl = page.getByRole("switch", {
+			name: "Receive release notes",
+		});
+
+		if ((await switchControl.getAttribute("aria-checked")) !== "true") {
+			throw new Error("The installed Switch did not render its default value.");
+		}
+
+		await switchControl.focus();
+		await page.keyboard.press("Space");
+		if ((await switchControl.getAttribute("aria-checked")) !== "false") {
+			throw new Error("The installed Switch did not toggle with the keyboard.");
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Switch has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+
+		await switchControl.evaluate((element) => {
+			element.addEventListener(
+				"pointerdown",
+				() => {
+					const startedAt = performance.now();
+					let largestFrame = 0;
+					let previousFrame = startedAt;
+
+					requestAnimationFrame((frameTime) => {
+						element.setAttribute(
+							"data-response-time",
+							String(frameTime - startedAt),
+						);
+
+						const measureFrame = (currentFrame: number) => {
+							largestFrame = Math.max(
+								largestFrame,
+								currentFrame - previousFrame,
+							);
+							previousFrame = currentFrame;
+
+							if (currentFrame - startedAt < 450) {
+								requestAnimationFrame(measureFrame);
+								return;
+							}
+
+							element.setAttribute("data-largest-frame", String(largestFrame));
+						};
+
+						requestAnimationFrame(measureFrame);
+					});
+				},
+				{ once: true },
+			);
+		});
+		await switchControl.click();
+		await page.waitForTimeout(500);
+		const responseTime = Number(
+			await switchControl.getAttribute("data-response-time"),
+		);
+		const largestFrame = Number(
+			await switchControl.getAttribute("data-largest-frame"),
+		);
+		if (
+			!Number.isFinite(responseTime) ||
+			!Number.isFinite(largestFrame) ||
+			responseTime >= 100 ||
+			largestFrame >= 50
+		) {
+			throw new Error(
+				`The installed Switch exceeded its interaction budget: ${responseTime}ms response, ${largestFrame}ms frame.`,
+			);
+		}
+
+		await page.waitForTimeout(300);
+		const activeAnimations = await page
+			.locator('[data-slot="aeri-switch"]')
+			.evaluate(
+				(switchRoot) => switchRoot.getAnimations({ subtree: true }).length,
+			);
+		if (activeAnimations > 0) {
+			throw new Error("The installed Switch did not settle its animations.");
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		await switchControl.click();
+		const thumb = page.locator('[data-slot="aeri-switch-thumb"]');
+		if (
+			(await thumb.evaluate(
+				(element) => getComputedStyle(element).transitionProperty,
+			)) !== "none"
+		) {
+			throw new Error("The installed Switch did not suppress motion.");
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
@@ -292,6 +401,7 @@ try {
 	await runPnpm(["exec", "shadcn", "--help"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
 
 	if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
@@ -303,6 +413,7 @@ try {
 	const installedSources = [
 		["accordion", "export {"],
 		["button", "export { Button"],
+		["switch", "export { Switch, SwitchThumb"],
 		["tabs", "export {\n\tTabs,"],
 	] as const;
 
@@ -328,6 +439,7 @@ try {
 	const consumerUrl = `http://127.0.0.1:${consumerPort}`;
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
+	await verifyInstalledSwitch(consumerUrl);
 	console.log("Consumer Project fixture passed.");
 } finally {
 	await stopConsumerProject(consumerServer);

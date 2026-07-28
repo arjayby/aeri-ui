@@ -136,6 +136,50 @@
         "navigation"
       ],
       "type": "registry:ui"
+    },
+    {
+      "name": "switch",
+      "title": "Switch",
+      "author": "Aeri UI",
+      "description": "A semantic Switch with tactile thumb movement and immediate press feedback.",
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/components/switch/switch.tsx",
+          "type": "registry:ui",
+          "target": "components/aeri/switch.tsx"
+        }
+      ],
+      "meta": {
+        "catalog": {
+          "boundary": "client",
+          "implementation": "native",
+          "publishedAt": "2026-07-28"
+        },
+        "lifecycle": "preview",
+        "preview": {
+          "label": "Switch preview",
+          "interaction": "Toggle an immediate preference with the keyboard or pointer.",
+          "fixture": "preview.tsx"
+        },
+        "example": "import { Switch, SwitchThumb } from \"@/components/aeri/switch\";\n\n<label className=\"flex items-center gap-3\">\n  <Switch defaultChecked name=\"release-notes\">\n    <SwitchThumb />\n  </Switch>\n  Enable release notifications\n</label>",
+        "changelog": [
+          {
+            "version": "0.1.0",
+            "date": "2026-07-28",
+            "summary": "Initial Preview Item release."
+          }
+        ],
+        "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/switch/switch.tsx"
+      },
+      "docs": "## Purpose\n\nUse Switch for an immediate binary setting that takes effect as soon as it changes. Use Checkbox when the Builder must select one or more values before a separate submission. Switch inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\nCompose `Switch` and `SwitchThumb`. `Switch` accepts Base UI Root props including controlled `checked`, uncontrolled `defaultChecked`, and `onCheckedChange`. It also forwards `disabled`, `readOnly`, `required`, `name`, `value`, `uncheckedValue`, `form`, and `inputRef` for form participation. `SwitchThumb` is the visual state indicator. Both parts forward refs and preserve Base UI props. The API exposes no raw motion controls.\n\n## Dependencies and client boundary\n\n`@base-ui/react` is Switch's only runtime dependency. Switch reaches Base UI's client boundary, so using it adds that client component to a Consumer Project. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nBase UI supplies switch semantics, checked state, keyboard activation with Space and Enter, visible focus, disabled and required behavior, accessible labeling through an enclosing label or an associated label, and a hidden input for forms. Every Switch needs a concise accessible name that states the setting, not merely its on or off state.\n\n## Motion and performance\n\nThe track briefly scales and dims during press acknowledgement, while the Thumb moves with one short CSS logical translate transition and the track changes color immediately. Reduced motion suppresses the nonessential scale while preserving the pressed color, checked state, and immediate acknowledgement. There is no motion runtime, recurring timer, or animation frame loop after the transition settles.\n\n## Consumer Theme\n\nSwitch uses Consumer Theme semantic colors, typography, radius, and appearance. Override tokens in the Consumer Project and use `className` for local layout changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nSwitch has a compact intrinsic size and its label reflows with its container. Label text is supplied by the Builder, so it can be localized. The Thumb follows the inherited text direction, moving toward the logical end when checked.\n\n## Compatibility\n\nSwitch supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn, and Base UI. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+      "categories": [
+        "component",
+        "form"
+      ],
+      "type": "registry:ui"
     }
   ]
 }

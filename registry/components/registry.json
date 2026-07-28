@@ -3,7 +3,8 @@
 	"include": [
 		"button/registry.json",
 		"accordion/registry.json",
-		"tabs/registry.json"
+		"tabs/registry.json",
+		"switch/registry.json"
 	],
 	"items": []
 }
