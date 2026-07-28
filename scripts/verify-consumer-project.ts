@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|switch|tabs|tooltip)\.json$/,
+			/^\/r\/(accordion|button|input|switch|tabs|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -472,6 +472,45 @@ async function verifyInstalledTooltip(url: string) {
 	}
 }
 
+async function verifyInstalledInput(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const input = page.getByRole("textbox", { name: "Account email" });
+
+		if ((await input.getAttribute("autocomplete")) !== "email") {
+			throw new Error("The installed Input did not preserve autocomplete.");
+		}
+
+		await input.focus();
+		if (
+			!(await input.evaluate((element) => element.matches(":focus-visible")))
+		) {
+			throw new Error("The installed Input did not preserve keyboard focus.");
+		}
+
+		if (await input.evaluate((element) => element.checkValidity())) {
+			throw new Error(
+				"The installed Input did not preserve required validation.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Input has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
@@ -516,6 +555,7 @@ try {
 	await runPnpm(["exec", "shadcn", "--help"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tooltip", "--yes"]);
@@ -529,6 +569,7 @@ try {
 	const installedSources = [
 		["accordion", "export {"],
 		["button", "export { Button"],
+		["input", "export { Input"],
 		["switch", "export { Switch, SwitchThumb"],
 		["tabs", "export {\n\tTabs,"],
 		["tooltip", "export {\n\tTooltip,"],
@@ -556,6 +597,7 @@ try {
 	const consumerUrl = `http://127.0.0.1:${consumerPort}`;
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
+	await verifyInstalledInput(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);
 	await verifyInstalledTooltip(consumerUrl);
 	console.log("Consumer Project fixture passed.");

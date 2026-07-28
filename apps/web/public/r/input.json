@@ -1,0 +1,45 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input",
+  "title": "Input",
+  "author": "Aeri UI",
+  "description": "A semantic Input with clear focus, validation, and success feedback.",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "registry/components/input/input.tsx",
+      "content": "import * as React from \"react\";\n\nfunction classNames(...values: Array<string | undefined>) {\n\treturn values.filter(Boolean).join(\" \");\n}\n\ntype InputProps = React.ComponentPropsWithRef<\"input\"> & {\n\tcontainerClassName?: string;\n\tdescription?: React.ReactNode;\n\tendAdornment?: React.ReactNode;\n\terror?: React.ReactNode;\n\tlabel?: React.ReactNode;\n\tstartAdornment?: React.ReactNode;\n\tsuccess?: React.ReactNode;\n};\n\nconst Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(\n\t{\n\t\t\"aria-describedby\": ariaDescribedBy,\n\t\t\"aria-errormessage\": ariaErrorMessage,\n\t\t\"aria-invalid\": ariaInvalid,\n\t\tclassName,\n\t\tcontainerClassName,\n\t\tdescription,\n\t\tendAdornment,\n\t\terror,\n\t\tid,\n\t\tlabel,\n\t\trequired,\n\t\tstartAdornment,\n\t\tsuccess,\n\t\t...props\n\t},\n\tref,\n) {\n\tconst generatedId = React.useId();\n\tconst inputId = id ?? generatedId;\n\tconst descriptionId = `${inputId}-description`;\n\tconst messageId = `${inputId}-message`;\n\tconst validationState =\n\t\terror !== undefined\n\t\t\t? \"error\"\n\t\t\t: success !== undefined\n\t\t\t\t? \"success\"\n\t\t\t\t: undefined;\n\tconst describedBy = [\n\t\tariaDescribedBy,\n\t\tdescription !== undefined ? descriptionId : undefined,\n\t\tvalidationState ? messageId : undefined,\n\t]\n\t\t.filter(Boolean)\n\t\t.join(\" \");\n\n\treturn (\n\t\t<div className={classNames(\"grid gap-2\", containerClassName)}>\n\t\t\t{label !== undefined ? (\n\t\t\t\t<label className=\"font-medium text-sm\" htmlFor={inputId}>\n\t\t\t\t\t{label}\n\t\t\t\t\t{required ? <span aria-hidden=\"true\"> *</span> : null}\n\t\t\t\t</label>\n\t\t\t) : null}\n\t\t\t<div\n\t\t\t\tclassName=\"flex items-center gap-2\"\n\t\t\t\tdata-slot=\"aeri-input-container\"\n\t\t\t\tdata-validation-state={validationState}\n\t\t\t>\n\t\t\t\t{startAdornment !== undefined ? (\n\t\t\t\t\t<span className=\"shrink-0 text-muted-foreground\">\n\t\t\t\t\t\t{startAdornment}\n\t\t\t\t\t</span>\n\t\t\t\t) : null}\n\t\t\t\t<input\n\t\t\t\t\taria-describedby={describedBy || undefined}\n\t\t\t\t\taria-errormessage={\n\t\t\t\t\t\tvalidationState === \"error\"\n\t\t\t\t\t\t\t? (ariaErrorMessage ?? messageId)\n\t\t\t\t\t\t\t: ariaErrorMessage\n\t\t\t\t\t}\n\t\t\t\t\taria-invalid={\n\t\t\t\t\t\tvalidationState === \"error\"\n\t\t\t\t\t\t\t? true\n\t\t\t\t\t\t\t: validationState === \"success\"\n\t\t\t\t\t\t\t\t? false\n\t\t\t\t\t\t\t\t: ariaInvalid\n\t\t\t\t\t}\n\t\t\t\t\tclassName={classNames(\n\t\t\t\t\t\t\"flex h-10 min-w-0 flex-1 rounded-[var(--radius)] border bg-transparent px-3 py-2 text-base outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground read-only:cursor-default read-only:bg-muted/50 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none\",\n\t\t\t\t\t\tvalidationState === \"error\"\n\t\t\t\t\t\t\t? \"border-destructive focus-visible:outline-destructive\"\n\t\t\t\t\t\t\t: validationState === \"success\"\n\t\t\t\t\t\t\t\t? \"border-primary focus-visible:outline-primary\"\n\t\t\t\t\t\t\t\t: \"border-input focus-visible:outline-ring\",\n\t\t\t\t\t\tclassName,\n\t\t\t\t\t)}\n\t\t\t\t\tdata-slot=\"aeri-input\"\n\t\t\t\t\tid={inputId}\n\t\t\t\t\tref={ref}\n\t\t\t\t\trequired={required}\n\t\t\t\t\t{...props}\n\t\t\t\t/>\n\t\t\t\t{endAdornment !== undefined ? (\n\t\t\t\t\t<span className=\"shrink-0 text-muted-foreground\">{endAdornment}</span>\n\t\t\t\t) : null}\n\t\t\t</div>\n\t\t\t{description !== undefined ? (\n\t\t\t\t<p className=\"text-muted-foreground text-sm\" id={descriptionId}>\n\t\t\t\t\t{description}\n\t\t\t\t</p>\n\t\t\t) : null}\n\t\t\t{validationState === \"error\" ? (\n\t\t\t\t<p className=\"text-destructive text-sm\" id={messageId} role=\"alert\">\n\t\t\t\t\t{error}\n\t\t\t\t</p>\n\t\t\t) : null}\n\t\t\t{validationState === \"success\" ? (\n\t\t\t\t<p className=\"text-primary text-sm\" id={messageId} role=\"status\">\n\t\t\t\t\t{success}\n\t\t\t\t</p>\n\t\t\t) : null}\n\t\t</div>\n\t);\n});\n\nexport { Input, type InputProps };\n",
+      "type": "registry:ui",
+      "target": "components/aeri/input.tsx"
+    }
+  ],
+  "meta": {
+    "catalog": {
+      "boundary": "server",
+      "implementation": "native",
+      "publishedAt": "2026-07-28"
+    },
+    "lifecycle": "preview",
+    "preview": {
+      "label": "Input preview",
+      "interaction": "Edit an email address, then submit to see immediate validation or success feedback.",
+      "fixture": "preview.tsx"
+    },
+    "example": "import { Input } from \"@/components/aeri/input\";\n\n<Input\n  autoComplete=\"email\"\n  description=\"We only use this to send account updates.\"\n  label=\"Email address\"\n  name=\"email\"\n  required\n  type=\"email\"\n/>",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-07-28",
+        "summary": "Initial Preview Item release."
+      }
+    ],
+    "changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/input",
+    "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/input/input.tsx"
+  },
+  "docs": "## Purpose\n\nUse Input for a single line native form value such as an email address, name, or search term. Provide a visible `label` when possible, and use `description`, `error`, and `success` to communicate supporting or validation feedback. Input inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`Input` renders one native `<input>` inside a semantic field layout and forwards its ref to that input. It preserves native input props, including controlled and uncontrolled values, `type`, `name`, `form`, `autoComplete`, `disabled`, `readOnly`, `required`, `placeholder`, `pattern`, and ARIA attributes. Supply `label` for an associated native label, `description` for supporting text, and either `error` or `success` for validation feedback. `error` sets `aria-invalid`, associates the error message with the field, and announces it immediately. `success` announces confirmation with a status message. `startAdornment` and `endAdornment` preserve their supplied semantics; mark decorative content with `aria-hidden`. `containerClassName` styles the field layout while `className` styles the native input.\n\n## Dependencies and client boundary\n\nInput has no runtime dependency beyond React and does not create a client boundary by itself. The Catalog Live Preview adds client state only to expose form states and controls.\n\n## Accessibility\n\nInput preserves native keyboard editing, focus, autofill, form submission, disabled, readonly, and required behavior. Use `label` or provide an accessible name through the native props. The component links descriptions and validation messages with `aria-describedby`; errors use `role=alert`, while success feedback uses `role=status`. Focus has a visible semantic ring and feedback is available as text without relying on motion.\n\n## Motion and performance\n\nFocus and validation color changes use one short CSS transition. Reduced motion removes that transition while retaining every focus and validation state immediately. There is no motion runtime, timer, animation frame loop, or post interaction work.\n\n## Consumer Theme\n\nInput uses Consumer Theme semantic colors, typography, radius, and light or dark appearance. Override Consumer Theme tokens and use `className` or `containerClassName` for local changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nInput fills its available inline size and reflows with its container. Labels, descriptions, validation feedback, and placeholders are supplied by the Builder, so they can be localized. Adornment order follows the inherited text direction, with no directional motion.\n\n## Compatibility\n\nInput supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+  "categories": [
+    "component",
+    "form"
+  ],
+  "type": "registry:ui"
+}
