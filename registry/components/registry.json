@@ -1,5 +1,5 @@
 {
 	"$schema": "https://ui.shadcn.com/schema/registry.json",
-	"include": ["button/registry.json"],
+	"include": ["button/registry.json", "accordion/registry.json"],
 	"items": []
 }

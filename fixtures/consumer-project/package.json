@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"build": "next build",
-		"check-types": "tsc --noEmit"
+		"check-types": "tsc --noEmit",
+		"start": "next start"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.6.0",
