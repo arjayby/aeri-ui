@@ -1,6 +1,7 @@
 import generatedAccordion from "../../public/r/accordion.json";
 import generatedButton from "../../public/r/button.json";
 import generatedInput from "../../public/r/input.json";
+import generatedNumberTicker from "../../public/r/number-ticker.json";
 import generatedSwitch from "../../public/r/switch.json";
 import generatedTabs from "../../public/r/tabs.json";
 import generatedTooltip from "../../public/r/tooltip.json";
@@ -12,6 +13,8 @@ const accordionSource = generatedAccordion.files[0]?.content;
 const buttonSource = generatedButton.files[0]?.content;
 const input = getRegistryItemByName("input");
 const inputSource = generatedInput.files[0]?.content;
+const numberTicker = getRegistryItemByName("number-ticker");
+const numberTickerSource = generatedNumberTicker.files[0]?.content;
 const switchItem = getRegistryItemByName("switch");
 const switchSource = generatedSwitch.files[0]?.content;
 const tabs = getRegistryItemByName("tabs");
@@ -29,6 +32,10 @@ if (!buttonSource) {
 
 if (!inputSource) {
 	throw new Error("The generated Input source is missing.");
+}
+
+if (!numberTickerSource) {
+	throw new Error("The generated Number Ticker source is missing.");
 }
 
 if (!switchSource) {
@@ -50,6 +57,8 @@ export {
 	buttonSource,
 	input,
 	inputSource,
+	numberTicker,
+	numberTickerSource,
 	switchItem,
 	switchSource,
 	tabs,

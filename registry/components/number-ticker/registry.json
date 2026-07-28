@@ -1,0 +1,77 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "number-ticker",
+			"type": "registry:ui",
+			"title": "Number Ticker",
+			"description": "An accessible Number Ticker with stable, localized numeric transitions.",
+			"author": "Aeri UI",
+			"dependencies": [],
+			"files": [
+				{
+					"path": "number-ticker.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/number-ticker.tsx"
+				}
+			],
+			"categories": ["component", "data-display"],
+			"docs": "## Purpose\n\nUse Number Ticker when a changing metric benefits from a brief visual transition, such as revenue, account totals, scores, or live measurements. Use ordinary text when the value is static or when motion would not add meaning. Number Ticker inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`NumberTicker` requires a finite numeric `value` and throws a `RangeError` for `NaN` or infinite values. Supply `locales` and `formatOptions` using the standard `Intl.NumberFormat` interface for decimals, currencies, percentages, compact notation, and localized separators. Set `reducedMotion` when an application preference must suppress motion in addition to the system preference. Number Ticker also preserves native span props and forwards its ref. The API exposes no Catalog utility or raw motion timing control.\n\n## Dependencies and client boundary\n\nNumber Ticker has no runtime dependency beyond React. Its short native Web Animation requires a client boundary. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nVisual transition layers are hidden from assistive technology. A polite atomic status exposes only the final formatted value, so intermediate animation frames are never announced. Pass native `aria-live=off` when another nearby status already communicates the same change. Number Ticker has no keyboard interaction of its own.\n\n## Motion and performance\n\nEach value change uses transform and opacity animations for the incoming and outgoing values. When the formatted width changes, one measured inline width animation prevents the surrounding layout from jumping; this limited layout animation is necessary because future localized output cannot be known in advance. All animations finish after 400 milliseconds and create no timer or animation frame loop. System or explicit reduced motion skips every animation and presents the final formatted value immediately. Browser checks cover response time, frame time, width continuity, and settled work.\n\n## Consumer Theme\n\nNumber Ticker inherits the Consumer Theme color, font, weight, and appearance. Use `className` for local typography or layout. The source does not add a global stylesheet, rewrite global tokens, or call a remote service.\n\n## Responsive, localization, and RTL\n\n`Intl.NumberFormat` supplies localized signs, grouping, decimal separators, currency placement, and compact notation. The visual layers share one intrinsic inline grid, so increasing, decreasing, large, negative, and decimal values remain aligned during a transition. Text direction and bidirectional number rendering follow the Consumer Project.\n\n## Compatibility\n\nNumber Ticker supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn in evergreen browsers with the Web Animations API. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "client",
+					"implementation": "native",
+					"publishedAt": "2026-07-28"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "Number Ticker preview",
+					"interaction": "Change the value, locale, and format to inspect stable numeric transitions.",
+					"fixture": "preview.tsx"
+				},
+				"api": [
+					{
+						"property": "value",
+						"type": "number",
+						"description": "Sets a finite numeric value and starts a transition when it changes."
+					},
+					{
+						"property": "locales",
+						"type": "Intl.LocalesArgument",
+						"description": "Chooses locale aware number formatting."
+					},
+					{
+						"property": "formatOptions",
+						"type": "Intl.NumberFormatOptions",
+						"description": "Configures decimal, currency, percent, compact, and other standard formats."
+					},
+					{
+						"property": "reducedMotion",
+						"type": "boolean",
+						"description": "Suppresses animation in addition to the system reduced motion preference."
+					},
+					{
+						"property": "aria-live, aria-atomic, role",
+						"type": "native ARIA props",
+						"description": "Defaults to a polite, atomic status and preserves native overrides."
+					},
+					{
+						"property": "...props",
+						"type": "span props",
+						"description": "Preserves native attributes, className, style, and a forwarded ref."
+					}
+				],
+				"example": "import { NumberTicker } from \"@/components/aeri/number-ticker\";\n\n<NumberTicker\n  formatOptions={{ style: \"currency\", currency: \"USD\" }}\n  locales=\"en-US\"\n  value={12450.75}\n/>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-28",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/number-ticker",
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/number-ticker/number-ticker.tsx"
+			}
+		}
+	]
+}

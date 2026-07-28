@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|input|switch|tabs|tooltip)\.json$/,
+			/^\/r\/(accordion|button|input|number-ticker|switch|tabs|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -511,6 +511,126 @@ async function verifyInstalledInput(url: string) {
 	}
 }
 
+async function verifyInstalledNumberTicker(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const ticker = page.locator('[data-slot="aeri-number-ticker"]');
+
+		if (
+			(await ticker.getAttribute("aria-live")) !== "polite" ||
+			(await ticker.getAttribute("aria-atomic")) !== "true" ||
+			(await ticker.getAttribute("data-value")) !== "12450.75"
+		) {
+			throw new Error(
+				"The installed Number Ticker did not expose its initial value accessibly.",
+			);
+		}
+
+		const increase = page.getByRole("button", {
+			name: "Increase account value",
+		});
+		await increase.evaluate((element) => {
+			element.addEventListener(
+				"pointerdown",
+				() => {
+					const startedAt = performance.now();
+					let largestFrame = 0;
+					let previousFrame = startedAt;
+
+					requestAnimationFrame((firstFrame) => {
+						element.setAttribute(
+							"data-response-time",
+							String(firstFrame - startedAt),
+						);
+
+						const measureFrame = (currentFrame: number) => {
+							largestFrame = Math.max(
+								largestFrame,
+								currentFrame - previousFrame,
+							);
+							previousFrame = currentFrame;
+
+							if (currentFrame - startedAt < 450) {
+								requestAnimationFrame(measureFrame);
+								return;
+							}
+
+							element.setAttribute("data-largest-frame", String(largestFrame));
+						};
+
+						requestAnimationFrame(measureFrame);
+					});
+				},
+				{ once: true },
+			);
+		});
+		await increase.click();
+		if (
+			(await ticker.getAttribute("data-value")) !== "37131" ||
+			!(await ticker.textContent())?.includes("$37,131.00")
+		) {
+			throw new Error(
+				"The installed Number Ticker did not render the updated formatted value.",
+			);
+		}
+
+		await page.waitForTimeout(500);
+		const responseTime = Number(
+			await increase.getAttribute("data-response-time"),
+		);
+		const largestFrame = Number(
+			await increase.getAttribute("data-largest-frame"),
+		);
+		if (
+			!Number.isFinite(responseTime) ||
+			!Number.isFinite(largestFrame) ||
+			responseTime >= 100 ||
+			largestFrame >= 50
+		) {
+			throw new Error(
+				`The installed Number Ticker exceeded its interaction budget: ${responseTime}ms response, ${largestFrame}ms frame.`,
+			);
+		}
+		if (
+			(await ticker.evaluate(
+				(element) => element.getAnimations({ subtree: true }).length,
+			)) !== 0
+		) {
+			throw new Error(
+				"The installed Number Ticker did not settle its animations.",
+			);
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		await increase.click();
+		if (
+			(await ticker.getAttribute("data-value")) !== "61811.25" ||
+			(await ticker.evaluate(
+				(element) => element.getAnimations({ subtree: true }).length,
+			)) !== 0
+		) {
+			throw new Error(
+				"The installed Number Ticker did not present its reduced motion value immediately.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Number Ticker has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
@@ -556,6 +676,7 @@ try {
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tooltip", "--yes"]);
@@ -570,6 +691,7 @@ try {
 		["accordion", "export {"],
 		["button", "export { Button"],
 		["input", "export { Input"],
+		["number-ticker", "export { NumberTicker"],
 		["switch", "export { Switch, SwitchThumb"],
 		["tabs", "export {\n\tTabs,"],
 		["tooltip", "export {\n\tTooltip,"],
@@ -598,6 +720,7 @@ try {
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
 	await verifyInstalledInput(consumerUrl);
+	await verifyInstalledNumberTicker(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);
 	await verifyInstalledTooltip(consumerUrl);
 	console.log("Consumer Project fixture passed.");

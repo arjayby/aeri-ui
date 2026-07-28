@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import {
 	Accordion,
 	AccordionHeader,
@@ -7,6 +11,7 @@ import {
 } from "@/components/aeri/accordion";
 import { Button as AeriButton } from "@/components/aeri/button";
 import { Input } from "@/components/aeri/input";
+import { NumberTicker } from "@/components/aeri/number-ticker";
 import {
 	Tabs,
 	TabsIndicator,
@@ -24,6 +29,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
+	const [accountValue, setAccountValue] = useState(12450.75);
+
 	return (
 		<main>
 			<h1>Consumer Project fixture</h1>
@@ -71,6 +78,18 @@ export default function Home() {
 					Receive release notes
 				</label>
 			</form>
+			<h2>Account value</h2>
+			<NumberTicker
+				formatOptions={{ currency: "USD", style: "currency" }}
+				locales="en-US"
+				value={accountValue}
+			/>
+			<button
+				onClick={() => setAccountValue((current) => current + 24680.25)}
+				type="button"
+			>
+				Increase account value
+			</button>
 			<TooltipProvider>
 				<Tooltip>
 					<TooltipTrigger>More tooltip info</TooltipTrigger>

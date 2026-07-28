@@ -86,7 +86,7 @@ function toCatalogItem(item: RegistryItem): CatalogItem {
 		categories,
 		collection,
 		description: item.description,
-		hasBaseUi: item.dependencies.includes("@base-ui/react"),
+		hasBaseUi: (item.dependencies as string[]).includes("@base-ui/react"),
 		implementation,
 		isNew: isRecentPublication(publishedAt),
 		lifecycle,

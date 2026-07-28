@@ -1,0 +1,77 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "number-ticker",
+  "title": "Number Ticker",
+  "author": "Aeri UI",
+  "description": "An accessible Number Ticker with stable, localized numeric transitions.",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "registry/components/number-ticker/number-ticker.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\ntype NumberTickerProps = Omit<\n\tReact.ComponentPropsWithRef<\"span\">,\n\t\"children\"\n> & {\n\tformatOptions?: Intl.NumberFormatOptions;\n\tlocales?: Intl.LocalesArgument;\n\treducedMotion?: boolean;\n\tvalue: number;\n};\n\nfunction getTextWidth(element: HTMLElement) {\n\tconst range = document.createRange();\n\trange.selectNodeContents(element);\n\treturn range.getBoundingClientRect().width;\n}\n\nconst NumberTicker = React.forwardRef<HTMLSpanElement, NumberTickerProps>(\n\tfunction NumberTicker(\n\t\t{\n\t\t\t\"aria-atomic\": ariaAtomic = true,\n\t\t\t\"aria-live\": ariaLive = \"polite\",\n\t\t\tclassName,\n\t\t\tformatOptions,\n\t\t\tlocales,\n\t\t\treducedMotion = false,\n\t\t\trole = \"status\",\n\t\t\tstyle,\n\t\t\tvalue,\n\t\t\t...props\n\t\t},\n\t\tref,\n\t) {\n\t\tconst formattedValue = React.useMemo(() => {\n\t\t\tif (!Number.isFinite(value)) {\n\t\t\t\tthrow new RangeError(\"NumberTicker value must be finite.\");\n\t\t\t}\n\n\t\t\treturn new Intl.NumberFormat(locales, formatOptions).format(value);\n\t\t}, [formatOptions, locales, value]);\n\t\tconst previousValue = React.useRef({\n\t\t\tformatted: formattedValue,\n\t\t\tvalue,\n\t\t});\n\t\tconst incomingRef = React.useRef<HTMLSpanElement>(null);\n\t\tconst interruptedWidth = React.useRef<number | undefined>(undefined);\n\t\tconst layoutRef = React.useRef<HTMLSpanElement>(null);\n\t\tconst outgoingRef = React.useRef<HTMLSpanElement>(null);\n\t\tconst rootRef = React.useRef<HTMLSpanElement>(null);\n\t\tconst changed = previousValue.current.formatted !== formattedValue;\n\t\tconst direction =\n\t\t\tvalue === previousValue.current.value\n\t\t\t\t? \"none\"\n\t\t\t\t: value > previousValue.current.value\n\t\t\t\t\t? \"up\"\n\t\t\t\t\t: \"down\";\n\n\t\tReact.useImperativeHandle(ref, () => rootRef.current as HTMLSpanElement);\n\n\t\tReact.useLayoutEffect(() => {\n\t\t\tconst incoming = incomingRef.current;\n\t\t\tconst layout = layoutRef.current;\n\t\t\tconst outgoing = outgoingRef.current;\n\t\t\tconst shouldReduceMotion =\n\t\t\t\treducedMotion ||\n\t\t\t\twindow.matchMedia(\"(prefers-reduced-motion: reduce)\").matches;\n\n\t\t\tpreviousValue.current = { formatted: formattedValue, value };\n\n\t\t\tif (!(incoming && layout)) {\n\t\t\t\treturn;\n\t\t\t}\n\n\t\t\tif (changed && outgoing) {\n\t\t\t\toutgoing.hidden = false;\n\t\t\t}\n\t\t\tconst preservedWidth = interruptedWidth.current;\n\t\t\tinterruptedWidth.current = undefined;\n\t\t\tlayout.style.width = \"\";\n\t\t\tconst targetWidth = getTextWidth(incoming);\n\t\t\tconst previousWidth =\n\t\t\t\tpreservedWidth ??\n\t\t\t\t(changed && outgoing ? getTextWidth(outgoing) : targetWidth);\n\t\t\tlayout.style.width = `${previousWidth}px`;\n\n\t\t\tif (!(changed && outgoing) || shouldReduceMotion) {\n\t\t\t\tif (outgoing) {\n\t\t\t\t\toutgoing.hidden = true;\n\t\t\t\t}\n\t\t\t\tlayout.style.width = \"\";\n\t\t\t\treturn;\n\t\t\t}\n\n\t\t\tconst offset = direction === \"down\" ? \"-0.7em\" : \"0.7em\";\n\t\t\tconst outgoingOffset = direction === \"down\" ? \"0.7em\" : \"-0.7em\";\n\t\t\tconst timing: KeyframeAnimationOptions = {\n\t\t\t\tduration: 400,\n\t\t\t\teasing: \"cubic-bezier(0.22, 1, 0.36, 1)\",\n\t\t\t};\n\t\t\tconst outgoingAnimation = outgoing.animate(\n\t\t\t\t[\n\t\t\t\t\t{ opacity: 1, transform: \"translateY(0)\" },\n\t\t\t\t\t{ opacity: 0, transform: `translateY(${outgoingOffset})` },\n\t\t\t\t],\n\t\t\t\ttiming,\n\t\t\t);\n\t\t\tconst incomingAnimation = incoming.animate(\n\t\t\t\t[\n\t\t\t\t\t{ opacity: 0, transform: `translateY(${offset})` },\n\t\t\t\t\t{ opacity: 1, transform: \"translateY(0)\" },\n\t\t\t\t],\n\t\t\t\ttiming,\n\t\t\t);\n\t\t\tconst widthAnimation =\n\t\t\t\tMath.abs(targetWidth - previousWidth) > 0.5\n\t\t\t\t\t? layout.animate(\n\t\t\t\t\t\t\t[{ width: `${previousWidth}px` }, { width: `${targetWidth}px` }],\n\t\t\t\t\t\t\ttiming,\n\t\t\t\t\t\t)\n\t\t\t\t\t: undefined;\n\t\t\tconst animations = [\n\t\t\t\tincomingAnimation,\n\t\t\t\toutgoingAnimation,\n\t\t\t\t...(widthAnimation ? [widthAnimation] : []),\n\t\t\t];\n\n\t\t\tPromise.all(animations.map((animation) => animation.finished))\n\t\t\t\t.then(() => {\n\t\t\t\t\toutgoing.hidden = true;\n\t\t\t\t\tlayout.style.width = \"\";\n\t\t\t\t})\n\t\t\t\t.catch(() => undefined);\n\n\t\t\treturn () => {\n\t\t\t\tconst wasInterrupted = animations.some(\n\t\t\t\t\t(animation) => animation.pending || animation.playState === \"running\",\n\t\t\t\t);\n\t\t\t\tconst currentWidth = wasInterrupted\n\t\t\t\t\t? layout.getBoundingClientRect().width\n\t\t\t\t\t: undefined;\n\t\t\t\tinterruptedWidth.current = currentWidth;\n\t\t\t\tfor (const animation of animations) {\n\t\t\t\t\tanimation.cancel();\n\t\t\t\t}\n\t\t\t\toutgoing.hidden = true;\n\t\t\t\tlayout.style.width =\n\t\t\t\t\tcurrentWidth === undefined ? \"\" : `${currentWidth}px`;\n\t\t\t};\n\t\t}, [changed, direction, formattedValue, reducedMotion, value]);\n\n\t\treturn (\n\t\t\t<span\n\t\t\t\taria-atomic={ariaAtomic}\n\t\t\t\taria-live={ariaLive}\n\t\t\t\tclassName={[\"inline-block align-baseline\", className]\n\t\t\t\t\t.filter(Boolean)\n\t\t\t\t\t.join(\" \")}\n\t\t\t\tdata-direction={direction}\n\t\t\t\tdata-slot=\"aeri-number-ticker\"\n\t\t\t\tdata-value={String(value)}\n\t\t\t\tref={rootRef}\n\t\t\t\trole={role}\n\t\t\t\tstyle={style}\n\t\t\t\t{...props}\n\t\t\t>\n\t\t\t\t<span\n\t\t\t\t\taria-hidden=\"true\"\n\t\t\t\t\tclassName=\"inline-grid justify-items-end overflow-hidden align-baseline tabular-nums\"\n\t\t\t\t\tdata-slot=\"aeri-number-ticker-layout\"\n\t\t\t\t\tref={layoutRef}\n\t\t\t\t>\n\t\t\t\t\t{changed ? (\n\t\t\t\t\t\t<span\n\t\t\t\t\t\t\taria-hidden=\"true\"\n\t\t\t\t\t\t\tclassName=\"col-start-1 row-start-1 w-max opacity-0 will-change-[transform,opacity]\"\n\t\t\t\t\t\t\tdata-slot=\"aeri-number-ticker-outgoing\"\n\t\t\t\t\t\t\tref={outgoingRef}\n\t\t\t\t\t\t>\n\t\t\t\t\t\t\t{previousValue.current.formatted}\n\t\t\t\t\t\t</span>\n\t\t\t\t\t) : null}\n\t\t\t\t\t<span\n\t\t\t\t\t\taria-hidden=\"true\"\n\t\t\t\t\t\tclassName=\"col-start-1 row-start-1 w-max will-change-[transform,opacity]\"\n\t\t\t\t\t\tdata-slot=\"aeri-number-ticker-value\"\n\t\t\t\t\t\tref={incomingRef}\n\t\t\t\t\t>\n\t\t\t\t\t\t{formattedValue}\n\t\t\t\t\t</span>\n\t\t\t\t</span>\n\t\t\t\t<span className=\"sr-only\">{formattedValue}</span>\n\t\t\t</span>\n\t\t);\n\t},\n);\n\nexport { NumberTicker, type NumberTickerProps };\n",
+      "type": "registry:ui",
+      "target": "components/aeri/number-ticker.tsx"
+    }
+  ],
+  "meta": {
+    "catalog": {
+      "boundary": "client",
+      "implementation": "native",
+      "publishedAt": "2026-07-28"
+    },
+    "lifecycle": "preview",
+    "preview": {
+      "label": "Number Ticker preview",
+      "interaction": "Change the value, locale, and format to inspect stable numeric transitions.",
+      "fixture": "preview.tsx"
+    },
+    "api": [
+      {
+        "property": "value",
+        "type": "number",
+        "description": "Sets a finite numeric value and starts a transition when it changes."
+      },
+      {
+        "property": "locales",
+        "type": "Intl.LocalesArgument",
+        "description": "Chooses locale aware number formatting."
+      },
+      {
+        "property": "formatOptions",
+        "type": "Intl.NumberFormatOptions",
+        "description": "Configures decimal, currency, percent, compact, and other standard formats."
+      },
+      {
+        "property": "reducedMotion",
+        "type": "boolean",
+        "description": "Suppresses animation in addition to the system reduced motion preference."
+      },
+      {
+        "property": "aria-live, aria-atomic, role",
+        "type": "native ARIA props",
+        "description": "Defaults to a polite, atomic status and preserves native overrides."
+      },
+      {
+        "property": "...props",
+        "type": "span props",
+        "description": "Preserves native attributes, className, style, and a forwarded ref."
+      }
+    ],
+    "example": "import { NumberTicker } from \"@/components/aeri/number-ticker\";\n\n<NumberTicker\n  formatOptions={{ style: \"currency\", currency: \"USD\" }}\n  locales=\"en-US\"\n  value={12450.75}\n/>",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-07-28",
+        "summary": "Initial Preview Item release."
+      }
+    ],
+    "changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/number-ticker",
+    "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/number-ticker/number-ticker.tsx"
+  },
+  "docs": "## Purpose\n\nUse Number Ticker when a changing metric benefits from a brief visual transition, such as revenue, account totals, scores, or live measurements. Use ordinary text when the value is static or when motion would not add meaning. Number Ticker inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`NumberTicker` requires a finite numeric `value` and throws a `RangeError` for `NaN` or infinite values. Supply `locales` and `formatOptions` using the standard `Intl.NumberFormat` interface for decimals, currencies, percentages, compact notation, and localized separators. Set `reducedMotion` when an application preference must suppress motion in addition to the system preference. Number Ticker also preserves native span props and forwards its ref. The API exposes no Catalog utility or raw motion timing control.\n\n## Dependencies and client boundary\n\nNumber Ticker has no runtime dependency beyond React. Its short native Web Animation requires a client boundary. The Catalog Live Preview adds further client state only to expose controls.\n\n## Accessibility\n\nVisual transition layers are hidden from assistive technology. A polite atomic status exposes only the final formatted value, so intermediate animation frames are never announced. Pass native `aria-live=off` when another nearby status already communicates the same change. Number Ticker has no keyboard interaction of its own.\n\n## Motion and performance\n\nEach value change uses transform and opacity animations for the incoming and outgoing values. When the formatted width changes, one measured inline width animation prevents the surrounding layout from jumping; this limited layout animation is necessary because future localized output cannot be known in advance. All animations finish after 400 milliseconds and create no timer or animation frame loop. System or explicit reduced motion skips every animation and presents the final formatted value immediately. Browser checks cover response time, frame time, width continuity, and settled work.\n\n## Consumer Theme\n\nNumber Ticker inherits the Consumer Theme color, font, weight, and appearance. Use `className` for local typography or layout. The source does not add a global stylesheet, rewrite global tokens, or call a remote service.\n\n## Responsive, localization, and RTL\n\n`Intl.NumberFormat` supplies localized signs, grouping, decimal separators, currency placement, and compact notation. The visual layers share one intrinsic inline grid, so increasing, decreasing, large, negative, and decimal values remain aligned during a transition. Text direction and bidirectional number rendering follow the Consumer Project.\n\n## Compatibility\n\nNumber Ticker supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn in evergreen browsers with the Web Animations API. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+  "categories": [
+    "component",
+    "data-display"
+  ],
+  "type": "registry:ui"
+}
