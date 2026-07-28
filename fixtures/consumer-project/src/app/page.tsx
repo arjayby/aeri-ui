@@ -6,6 +6,7 @@ import {
 	AccordionTrigger,
 } from "@/components/aeri/accordion";
 import { Button as AeriButton } from "@/components/aeri/button";
+import { Input } from "@/components/aeri/input";
 import {
 	Tabs,
 	TabsIndicator,
@@ -55,6 +56,14 @@ export default function Home() {
 				<TabsPanel value="activity">Activity content</TabsPanel>
 			</Tabs>
 			<form>
+				<Input
+					autoComplete="email"
+					description="Used for account notifications."
+					label="Account email"
+					name="account-email"
+					required
+					type="email"
+				/>
 				<label htmlFor="release-notes">
 					<Switch defaultChecked id="release-notes" name="release-notes">
 						<SwitchThumb />

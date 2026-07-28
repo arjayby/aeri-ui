@@ -1,0 +1,45 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "input",
+			"type": "registry:ui",
+			"title": "Input",
+			"description": "A semantic Input with clear focus, validation, and success feedback.",
+			"author": "Aeri UI",
+			"dependencies": [],
+			"files": [
+				{
+					"path": "input.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/input.tsx"
+				}
+			],
+			"categories": ["component", "form"],
+			"docs": "## Purpose\n\nUse Input for a single line native form value such as an email address, name, or search term. Provide a visible `label` when possible, and use `description`, `error`, and `success` to communicate supporting or validation feedback. Input inherits the Consumer Theme rather than applying an Aeri UI theme.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`Input` renders one native `<input>` inside a semantic field layout and forwards its ref to that input. It preserves native input props, including controlled and uncontrolled values, `type`, `name`, `form`, `autoComplete`, `disabled`, `readOnly`, `required`, `placeholder`, `pattern`, and ARIA attributes. Supply `label` for an associated native label, `description` for supporting text, and either `error` or `success` for validation feedback. `error` sets `aria-invalid`, associates the error message with the field, and announces it immediately. `success` announces confirmation with a status message. `startAdornment` and `endAdornment` preserve their supplied semantics; mark decorative content with `aria-hidden`. `containerClassName` styles the field layout while `className` styles the native input.\n\n## Dependencies and client boundary\n\nInput has no runtime dependency beyond React and does not create a client boundary by itself. The Catalog Live Preview adds client state only to expose form states and controls.\n\n## Accessibility\n\nInput preserves native keyboard editing, focus, autofill, form submission, disabled, readonly, and required behavior. Use `label` or provide an accessible name through the native props. The component links descriptions and validation messages with `aria-describedby`; errors use `role=alert`, while success feedback uses `role=status`. Focus has a visible semantic ring and feedback is available as text without relying on motion.\n\n## Motion and performance\n\nFocus and validation color changes use one short CSS transition. Reduced motion removes that transition while retaining every focus and validation state immediately. There is no motion runtime, timer, animation frame loop, or post interaction work.\n\n## Consumer Theme\n\nInput uses Consumer Theme semantic colors, typography, radius, and light or dark appearance. Override Consumer Theme tokens and use `className` or `containerClassName` for local changes. The source does not add a global stylesheet or rewrite global tokens.\n\n## Responsive, localization, and RTL\n\nInput fills its available inline size and reflows with its container. Labels, descriptions, validation feedback, and placeholders are supplied by the Builder, so they can be localized. Adornment order follows the inherited text direction, with no directional motion.\n\n## Compatibility\n\nInput supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn. It works in light and dark Consumer Theme appearances and remains functional offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "server",
+					"implementation": "native",
+					"publishedAt": "2026-07-28"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "Input preview",
+					"interaction": "Edit an email address, then submit to see immediate validation or success feedback.",
+					"fixture": "preview.tsx"
+				},
+				"example": "import { Input } from \"@/components/aeri/input\";\n\n<Input\n  autoComplete=\"email\"\n  description=\"We only use this to send account updates.\"\n  label=\"Email address\"\n  name=\"email\"\n  required\n  type=\"email\"\n/>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-28",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/components/input",
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/components/input/input.tsx"
+			}
+		}
+	]
+}
