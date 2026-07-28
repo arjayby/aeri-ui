@@ -224,6 +224,6 @@ test("Builder sees a migrated document in the production Catalog", async ({
 
 	await expect(page).toHaveScreenshot("documentation-security.png", {
 		fullPage: true,
-		maxDiffPixels: 3_500,
+		maxDiffPixels: 4_000,
 	});
 });

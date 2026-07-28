@@ -6,6 +6,13 @@ import {
 	AccordionTrigger,
 } from "@/components/aeri/accordion";
 import { Button as AeriButton } from "@/components/aeri/button";
+import {
+	Tabs,
+	TabsIndicator,
+	TabsList,
+	TabsPanel,
+	TabsTab,
+} from "@/components/aeri/tabs";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -31,6 +38,15 @@ export default function Home() {
 					</AccordionPanel>
 				</AccordionItem>
 			</Accordion>
+			<Tabs defaultValue="overview">
+				<TabsList>
+					<TabsTab value="overview">Overview</TabsTab>
+					<TabsTab value="activity">Activity</TabsTab>
+					<TabsIndicator />
+				</TabsList>
+				<TabsPanel value="overview">Overview content</TabsPanel>
+				<TabsPanel value="activity">Activity content</TabsPanel>
+			</Tabs>
 		</main>
 	);
 }
