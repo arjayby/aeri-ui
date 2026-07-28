@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
 	return (
 		<main>
+			<h1>Consumer Project fixture</h1>
 			<Button type="button">Consumer Project fixture</Button>
 			<AeriButton type="button">Primary action</AeriButton>
 			<AeriButton type="button" variant="secondary">
@@ -19,6 +20,7 @@ export default function Home() {
 			<AeriButton type="button" variant="destructive">
 				Delete item
 			</AeriButton>
+			<h2>Order details</h2>
 			<Accordion defaultValue={["shipping"]}>
 				<AccordionItem value="shipping">
 					<AccordionHeader>
