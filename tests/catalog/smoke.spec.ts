@@ -107,7 +107,12 @@ test("Builder can browse the Block catalog", async ({ page }) => {
 		page.getByRole("heading", { name: "Blocks", exact: true }),
 	).toBeVisible();
 	await expect(page.getByRole("button", { name: "Actions" })).toBeVisible();
-	await expect(page.getByText("No Blocks match these filters.")).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "Command Palette" }),
+	).toHaveCount(2);
+	await expect(
+		page.getByRole("link", { name: "View Command Palette" }).first(),
+	).toHaveAttribute("href", "/blocks/command-palette");
 });
 
 test("Builder can read every migrated document in the unified Catalog", async ({

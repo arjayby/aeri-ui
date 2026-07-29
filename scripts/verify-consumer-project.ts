@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
+			/^\/r\/(accordion|button|command-palette|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -511,6 +511,72 @@ async function verifyInstalledInput(url: string) {
 	}
 }
 
+async function verifyInstalledCommandPalette(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const trigger = page.getByRole("button", {
+			name: "Open installed command palette",
+		});
+		await trigger.click();
+		const search = page.getByRole("combobox", { name: "Search commands" });
+		const dialog = page.getByRole("dialog", { name: "Command palette" });
+
+		if (
+			!(await search.evaluate((element) => element === document.activeElement))
+		) {
+			throw new Error(
+				"The installed Command Palette did not focus its search.",
+			);
+		}
+		if (
+			(await dialog.getByRole("status").textContent()) !==
+			"2 commands available."
+		) {
+			throw new Error(
+				"The installed Command Palette did not announce available commands.",
+			);
+		}
+
+		await search.fill("reports");
+		await page.getByRole("option", { name: "Open reports" }).click();
+		if (
+			!(await page.locator("p[role=status]").textContent())?.includes("reports")
+		) {
+			throw new Error(
+				"The installed Command Palette did not call the consumer selection callback.",
+			);
+		}
+		if (
+			!(await trigger.evaluate((element) => element === document.activeElement))
+		) {
+			throw new Error("The installed Command Palette did not restore focus.");
+		}
+
+		await trigger.click();
+		await page.keyboard.press("Escape");
+		if (await page.getByRole("dialog").count()) {
+			throw new Error(
+				"The installed Command Palette did not close with Escape.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Command Palette has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 async function verifyInstalledNumberTicker(url: string) {
 	const browser = await chromium.launch();
 
@@ -741,6 +807,7 @@ try {
 	await runPnpm(["install", "--frozen-lockfile"]);
 	await runPnpm(["exec", "shadcn", "--help"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/command-palette", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
@@ -758,6 +825,7 @@ try {
 	const installedSources = [
 		["accordion", "export {"],
 		["button", "export { Button"],
+		["command-palette", "export {\n\tCommandPalette,"],
 		["input", "export { Input"],
 		["number-ticker", "export { NumberTicker"],
 		["switch", "export { Switch, SwitchThumb"],
@@ -788,6 +856,7 @@ try {
 	const consumerUrl = `http://127.0.0.1:${consumerPort}`;
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
+	await verifyInstalledCommandPalette(consumerUrl);
 	await verifyInstalledInput(consumerUrl);
 	await verifyInstalledNumberTicker(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);

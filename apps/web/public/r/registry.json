@@ -413,6 +413,50 @@
         "content"
       ],
       "type": "registry:ui"
+    },
+    {
+      "name": "command-palette",
+      "title": "Command Palette",
+      "author": "Aeri UI",
+      "description": "A keyboard first Command Palette with grouped search and consumer owned actions.",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "registry/blocks/command-palette/command-palette.tsx",
+          "type": "registry:ui",
+          "target": "components/aeri/command-palette.tsx"
+        }
+      ],
+      "meta": {
+        "catalog": {
+          "boundary": "client",
+          "implementation": "native",
+          "publishedAt": "2026-07-29"
+        },
+        "lifecycle": "preview",
+        "preview": {
+          "label": "Command Palette preview",
+          "interaction": "Open the palette, search grouped commands, then select one to observe the consumer callback.",
+          "fixture": "preview.tsx"
+        },
+        "example": "import { CommandPalette } from \"@/components/aeri/command-palette\";\n\n<CommandPalette\n  commands={[\n    {\n      id: \"navigation\",\n      label: \"Navigation\",\n      commands: [\n        { id: \"projects\", label: \"Open projects\", onSelect: openProjects },\n      ],\n    },\n  ]}\n  onOpenChange={setCommandPaletteOpen}\n  open={commandPaletteOpen}\n/>",
+        "changelog": [
+          {
+            "version": "0.1.0",
+            "date": "2026-07-29",
+            "summary": "Initial Preview Item release."
+          }
+        ],
+        "changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/blocks/command-palette",
+        "sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/blocks/command-palette/command-palette.tsx"
+      },
+      "docs": "## Purpose\n\nUse Command Palette for fast application navigation and actions when a Builder owns the command list and callback behavior. It has no backend, routing, icon library, or application specific assumption.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`CommandPalette` accepts grouped `commands`, each with a stable group and command `id`, `label`, optional `keywords`, `shortcut`, `icon`, `disabled`, and `onSelect` callback. Command IDs do not need to be unique outside their group. Use `open`, `defaultOpen`, and `onOpenChange` for controlled or uncontrolled visibility. The top level `onSelect` receives the selected command, while a command level `onSelect` owns its corresponding product action. Supply localized `dialogLabel`, `placeholder`, `emptyLabel`, `closeLabel`, and `closeShortcutLabel` copy.\n\n## Dependencies and client boundary\n\nCommand Palette has no runtime dependency beyond React. It manages focus, keyboard input, and local query state, so it creates a client boundary. The Catalog Live Preview only supplies demonstration commands and callback feedback.\n\n## Accessibility\n\nThe palette renders a modal dialog with a labelled combobox and grouped listbox options. It moves the active option with Arrow keys, chooses it with Enter or pointer interaction, closes with Escape or the backdrop, traps Tab focus inside the dialog, and restores focus to the opener after closing. A polite atomic status announces the available result count and empty state. Supply visible labels, keyboard hints, icons, and all localized copy through the public API.\n\n## Motion and performance\n\nOpening and active row feedback use short native color and opacity transitions. Reduced motion removes nonessential transitions while preserving immediate active state and selection feedback. Search is local and synchronous. There is no motion runtime, timer, animation frame loop, remote request, or post interaction work.\n\n## Consumer Theme\n\nCommand Palette uses Consumer Theme semantic colors, typography, radius, and light or dark appearance. Its classes use ordinary Tailwind utilities, and the source does not add a global stylesheet or rewrite Consumer Theme tokens.\n\n## Responsive, localization, and RTL\n\nThe dialog fills the available inline size up to a readable maximum and scrolls its result list rather than the page. All visible copy, icons, labels, shortcuts, and commands are consumer supplied. Layout follows inherited text direction, and no directional motion is used.\n\n## Compatibility\n\nCommand Palette supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn conventions in evergreen browsers. It works offline after installation.",
+      "categories": [
+        "block",
+        "navigation",
+        "overlay"
+      ],
+      "type": "registry:block"
     }
   ]
 }
