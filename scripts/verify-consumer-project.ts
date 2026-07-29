@@ -596,7 +596,9 @@ async function verifyInstalledCommandPalette(url: string) {
 		await search.fill("reports");
 		await page.getByRole("option", { name: "Open reports" }).click();
 		if (
-			!(await page.locator("p[role=status]").textContent())?.includes("reports")
+			!(await page.locator("main > p[role=status]").textContent())?.includes(
+				"reports",
+			)
 		) {
 			throw new Error(
 				"The installed Command Palette did not call the consumer selection callback.",
