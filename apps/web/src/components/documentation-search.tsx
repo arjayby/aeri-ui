@@ -8,6 +8,22 @@ import { useEffect, useState } from "react";
 
 type SearchDialogProps = Omit<DefaultSearchDialogProps, "dialogHandle">;
 
+function SearchDialogLoading() {
+	return (
+		<div
+			aria-busy="true"
+			aria-label="Search"
+			aria-modal="true"
+			className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-5 backdrop-blur-sm"
+			role="dialog"
+		>
+			<p className="rounded-xl border border-border bg-popover px-4 py-3 text-sm shadow-lg">
+				<span role="status">Opening search…</span>
+			</p>
+		</div>
+	);
+}
+
 const SearchDialog = dynamic<SearchDialogProps>(
 	async () => {
 		const { default: Dialog } = await import(
@@ -19,7 +35,7 @@ const SearchDialog = dynamic<SearchDialogProps>(
 			return <Dialog {...props} dialogHandle={undefined as never} />;
 		};
 	},
-	{ ssr: false },
+	{ loading: SearchDialogLoading, ssr: false },
 );
 
 export function DocumentationSearch() {

@@ -64,6 +64,10 @@ _Avoid_: Performance goal, best effort
 The loading, responsiveness, layout-stability, and asset-budget requirements that the public Catalog must satisfy in CI and production.
 _Avoid_: Registry Item Performance Contract, Lighthouse goal
 
+**Catalog Production Contract**:
+The broader browser, accessibility, performance, privacy, caching, and self-hostability checks that the public Catalog must satisfy before release. It includes the Catalog Performance Contract.
+_Avoid_: Catalog Performance Contract, best effort
+
 **Accessibility Contract**:
 The applicable WCAG 2.2 Level AA requirements that the public catalog and every Registry Item must satisfy before publication.
 _Avoid_: Accessibility goal, best effort
