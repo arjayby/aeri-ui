@@ -333,18 +333,16 @@ async function verifyInstalledSwitch(url: string) {
 		}
 
 		await page.waitForTimeout(300);
-		const activeAnimations = await page
-			.locator('[data-slot="aeri-switch"]')
-			.evaluate(
-				(switchRoot) => switchRoot.getAnimations({ subtree: true }).length,
-			);
+		const activeAnimations = await switchControl.evaluate(
+			(switchRoot) => switchRoot.getAnimations({ subtree: true }).length,
+		);
 		if (activeAnimations > 0) {
 			throw new Error("The installed Switch did not settle its animations.");
 		}
 
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await switchControl.click();
-		const thumb = page.locator('[data-slot="aeri-switch-thumb"]');
+		const thumb = switchControl.locator('[data-slot="aeri-switch-thumb"]');
 		if (
 			(await thumb.evaluate(
 				(element) => getComputedStyle(element).transitionProperty,
