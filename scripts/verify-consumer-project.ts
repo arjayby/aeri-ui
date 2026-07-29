@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|input|number-ticker|switch|tabs|tooltip)\.json$/,
+			/^\/r\/(accordion|button|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -631,6 +631,73 @@ async function verifyInstalledNumberTicker(url: string) {
 	}
 }
 
+async function verifyInstalledTextSwap(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const textSwap = page.locator('[data-slot="aeri-text-swap"]');
+		const processRequest = page.getByRole("button", {
+			name: "Process request",
+		});
+
+		if (
+			(await textSwap.getAttribute("aria-live")) !== "polite" ||
+			(await textSwap.getAttribute("aria-atomic")) !== "true" ||
+			(await textSwap.getAttribute("data-key")) !== "Ready"
+		) {
+			throw new Error(
+				"The installed Text Swap did not expose its initial content accessibly.",
+			);
+		}
+
+		await processRequest.click();
+		if (
+			(await textSwap.getAttribute("data-key")) !== "Processing your request" ||
+			!(await textSwap.textContent())?.includes("Processing your request")
+		) {
+			throw new Error(
+				"The installed Text Swap did not render its updated content.",
+			);
+		}
+
+		await page.waitForTimeout(500);
+		if (
+			(await textSwap.evaluate(
+				(element) => element.getAnimations({ subtree: true }).length,
+			)) !== 0
+		) {
+			throw new Error("The installed Text Swap did not settle its animations.");
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		await processRequest.click();
+		if (
+			(await textSwap.getAttribute("data-key")) !== "Ready" ||
+			(await textSwap.evaluate(
+				(element) => element.getAnimations({ subtree: true }).length,
+			)) !== 0
+		) {
+			throw new Error(
+				"The installed Text Swap did not present reduced motion content immediately.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Text Swap has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
@@ -679,6 +746,7 @@ try {
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/text-swap", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tooltip", "--yes"]);
 
 	if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
@@ -694,6 +762,7 @@ try {
 		["number-ticker", "export { NumberTicker"],
 		["switch", "export { Switch, SwitchThumb"],
 		["tabs", "export {\n\tTabs,"],
+		["text-swap", "export { TextSwap"],
 		["tooltip", "export {\n\tTooltip,"],
 	] as const;
 
@@ -722,6 +791,7 @@ try {
 	await verifyInstalledInput(consumerUrl);
 	await verifyInstalledNumberTicker(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);
+	await verifyInstalledTextSwap(consumerUrl);
 	await verifyInstalledTooltip(consumerUrl);
 	console.log("Consumer Project fixture passed.");
 } finally {

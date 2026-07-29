@@ -12,6 +12,7 @@ import {
 import { Button as AeriButton } from "@/components/aeri/button";
 import { Input } from "@/components/aeri/input";
 import { NumberTicker } from "@/components/aeri/number-ticker";
+import { TextSwap } from "@/components/aeri/text-swap";
 import {
 	Tabs,
 	TabsIndicator,
@@ -30,6 +31,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
 	const [accountValue, setAccountValue] = useState(12450.75);
+	const [requestStatus, setRequestStatus] = useState("Ready");
 
 	return (
 		<main>
@@ -89,6 +91,18 @@ export default function Home() {
 				type="button"
 			>
 				Increase account value
+			</button>
+			<h2>Request status</h2>
+			<TextSwap content={requestStatus} contentKey={requestStatus} />
+			<button
+				onClick={() =>
+					setRequestStatus((current) =>
+						current === "Ready" ? "Processing your request" : "Ready",
+					)
+				}
+				type="button"
+			>
+				Process request
 			</button>
 			<TooltipProvider>
 				<Tooltip>
