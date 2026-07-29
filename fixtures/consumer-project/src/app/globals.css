@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+html,
+body {
+	inline-size: 100%;
+	overflow-x: clip;
+}
+
+main {
+	max-inline-size: 100%;
+	min-inline-size: 0;
+	overflow-x: clip;
+	padding: 1rem;
+}

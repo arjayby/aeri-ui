@@ -11,7 +11,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
-import { chromium } from "@playwright/test";
+import { type BrowserType, chromium, firefox, webkit } from "@playwright/test";
+import { launchSet, launchSetNames } from "./launch-set";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, "..");
@@ -27,9 +28,34 @@ const consumerProjectDirectory = mkdtempSync(
 	join(tmpdir(), "aeri-ui-consumer-project-"),
 );
 
-function runPnpm(args: string[], cwd = consumerProjectDirectory) {
+const packageManagers = ["npm", "pnpm", "yarn", "bun"] as const;
+type PackageManager = (typeof packageManagers)[number];
+
+const browserTypes = { chromium, firefox, webkit } as const;
+type BrowserName = keyof typeof browserTypes;
+
+const packageManager = (process.env.CONSUMER_PACKAGE_MANAGER ??
+	"pnpm") as PackageManager;
+const browserName = (process.env.CONSUMER_BROWSER ?? "chromium") as BrowserName;
+
+if (!packageManagers.includes(packageManager)) {
+	throw new Error(
+		`Unsupported Consumer Project package manager: ${packageManager}.`,
+	);
+}
+
+if (!(browserName in browserTypes)) {
+	throw new Error(`Unsupported Consumer Project browser: ${browserName}.`);
+}
+
+function run(
+	command: string,
+	args: string[],
+	cwd = consumerProjectDirectory,
+	env = process.env,
+) {
 	return new Promise<void>((resolve, reject) => {
-		const child = spawn("pnpm", args, { cwd, stdio: "inherit" });
+		const child = spawn(command, args, { cwd, env, stdio: "inherit" });
 
 		child.once("error", reject);
 		child.once("exit", (code) => {
@@ -38,15 +64,68 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 				return;
 			}
 
-			reject(new Error(`pnpm ${args.join(" ")} exited with code ${code}.`));
+			reject(
+				new Error(`${command} ${args.join(" ")} exited with code ${code}.`),
+			);
 		});
 	});
+}
+
+function consumerProjectCommand(
+	operation: "install" | "exec" | "run",
+	args: string[],
+) {
+	const commands: Record<PackageManager, { command: string; args: string[] }> =
+		{
+			npm: {
+				command: "npm",
+				args:
+					operation === "exec" ? ["exec", "--", ...args] : [operation, ...args],
+			},
+			pnpm: {
+				command: "pnpm",
+				args: [operation, ...args],
+			},
+			yarn: {
+				command: "corepack",
+				args: ["yarn", operation, ...args],
+			},
+			bun: {
+				command: "bun",
+				args:
+					operation === "exec"
+						? ["x", "--no-install", ...args]
+						: [operation, ...args],
+			},
+		};
+	return commands[packageManager];
+}
+
+function runConsumerProject(
+	operation: "install" | "exec" | "run",
+	args: string[],
+	cwd = consumerProjectDirectory,
+) {
+	const command = consumerProjectCommand(operation, args);
+
+	return run(
+		command.command,
+		command.args,
+		cwd,
+		packageManager === "yarn"
+			? {
+					...process.env,
+					YARN_ENABLE_HARDENED_MODE: "0",
+					YARN_ENABLE_IMMUTABLE_INSTALLS: "false",
+				}
+			: process.env,
+	);
 }
 
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|command-palette|file-upload|input|number-ticker|settings-form|switch|tabs|text-swap|tooltip)\.json$/,
+			new RegExp(`^/r/(${launchSetNames.join("|")})\\.json$`),
 		)?.[1];
 
 		if (itemName) {
@@ -77,6 +156,92 @@ async function serveRegistry() {
 	};
 }
 
+function configureRegistry(consumerDirectory: string, registryUrl: string) {
+	const componentsConfigPath = join(consumerDirectory, "components.json");
+	const componentsConfig = JSON.parse(
+		readFileSync(componentsConfigPath, "utf8"),
+	) as {
+		registries?: Record<string, string>;
+	};
+
+	writeFileSync(
+		componentsConfigPath,
+		`${JSON.stringify(
+			{
+				...componentsConfig,
+				registries: {
+					...componentsConfig.registries,
+					"@aeri-ui": registryUrl,
+				},
+			},
+			null,
+			2,
+		)}\n`,
+	);
+}
+
+function verifyInstalledSource(
+	consumerDirectory: string,
+	itemName: string,
+	expectedExport: string,
+) {
+	const installedSourcePath = join(
+		consumerDirectory,
+		"src",
+		"components",
+		"aeri",
+		`${itemName}.tsx`,
+	);
+
+	if (!readFileSync(installedSourcePath, "utf8").includes(expectedExport)) {
+		throw new Error(
+			`Installing ${itemName} did not write the Aeri owned source.`,
+		);
+	}
+}
+
+async function verifyIndependentInstallations(registryUrl: string) {
+	for (const item of launchSet) {
+		const independentDirectory = mkdtempSync(
+			join(tmpdir(), `aeri-ui-${item.name}-`),
+		);
+
+		try {
+			cpSync(fixtureDirectory, independentDirectory, { recursive: true });
+			configureRegistry(independentDirectory, registryUrl);
+			const ordinaryButtonPath = join(
+				independentDirectory,
+				"src",
+				"components",
+				"ui",
+				"button.tsx",
+			);
+			const ordinaryButtonSource = readFileSync(ordinaryButtonPath, "utf8");
+			console.log(
+				`Verifying independent ${item.name} installation with ${packageManager}.`,
+			);
+			await runConsumerProject("install", [], independentDirectory);
+			await runConsumerProject(
+				"exec",
+				["shadcn", "add", `@aeri-ui/${item.name}`, "--yes"],
+				independentDirectory,
+			);
+			verifyInstalledSource(
+				independentDirectory,
+				item.name,
+				item.expectedExport,
+			);
+			if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
+				throw new Error(
+					`Installing ${item.name} overwrote the Consumer Project's shadcn Button.`,
+				);
+			}
+		} finally {
+			rmSync(independentDirectory, { force: true, recursive: true });
+		}
+	}
+}
+
 async function getAvailablePort() {
 	const server = createServer();
 	await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -93,7 +258,14 @@ async function getAvailablePort() {
 }
 
 function startConsumerProject(port: number) {
-	return spawn("pnpm", ["exec", "next", "start", "--port", String(port)], {
+	const command = consumerProjectCommand("exec", [
+		"next",
+		"start",
+		"--port",
+		String(port),
+	]);
+
+	return spawn(command.command, command.args, {
 		cwd: consumerProjectDirectory,
 		stdio: "inherit",
 	});
@@ -131,8 +303,74 @@ async function stopConsumerProject(server?: ReturnType<typeof spawn>) {
 	await new Promise<void>((resolve) => server.once("exit", () => resolve()));
 }
 
-async function verifyInstalledAccordion(url: string) {
-	const browser = await chromium.launch();
+async function verifyConsumerThemesAndLayout(
+	url: string,
+	browserType: BrowserType,
+) {
+	const browser = await browserType.launch();
+	const environments = [
+		{ colorScheme: "light" as const, name: "light", rtl: false, width: 1440 },
+		{ colorScheme: "dark" as const, name: "dark", rtl: false, width: 1440 },
+		{ colorScheme: "dark" as const, name: "RTL mobile", rtl: true, width: 390 },
+	];
+
+	try {
+		for (const environment of environments) {
+			const remoteRequests: string[] = [];
+			const context = await browser.newContext({
+				colorScheme: environment.colorScheme,
+				locale: environment.rtl ? "ar" : "en-US",
+				viewport: { height: 844, width: environment.width },
+			});
+			context.on("request", (request) => {
+				const requestUrl = new URL(request.url());
+				if (requestUrl.hostname !== "127.0.0.1") {
+					remoteRequests.push(request.url());
+				}
+			});
+			if (environment.rtl) {
+				await context.addInitScript(() => {
+					document.documentElement.dir = "rtl";
+					document.documentElement.lang = "ar";
+				});
+			}
+
+			const page = await context.newPage();
+			await page.goto(url);
+			if (environment.rtl) {
+				await page.locator("html").evaluate((element) => {
+					element.dir = "rtl";
+					element.lang = "ar";
+				});
+			}
+			if (
+				!(await page.evaluate(
+					({ colorScheme, rtl }) =>
+						matchMedia(`(prefers-color-scheme: ${colorScheme})`).matches &&
+						(!rtl || document.documentElement.dir === "rtl") &&
+						document.documentElement.scrollWidth <= window.innerWidth,
+					{ colorScheme: environment.colorScheme, rtl: environment.rtl },
+				))
+			) {
+				throw new Error(
+					`The installed Consumer Project did not fit the ${environment.name} environment.`,
+				);
+			}
+			if (remoteRequests.length > 0) {
+				throw new Error(
+					`The installed Consumer Project made remote requests in the ${environment.name} environment: ${remoteRequests.join(", ")}.`,
+				);
+			}
+
+			await context.close();
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
+async function verifyInstalledAccordion(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -235,12 +473,13 @@ async function verifyInstalledAccordion(url: string) {
 
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await trigger.click();
-		const panel = page.getByRole("region", { name: "Shipping" });
-		if (
-			(await panel.evaluate(
-				(element) => getComputedStyle(element).transitionProperty,
-			)) !== "none"
-		) {
+		await page.waitForTimeout(50);
+		const reducedMotionAnimations = await page
+			.locator('[data-slot="aeri-accordion"]')
+			.evaluate(
+				(accordion) => accordion.getAnimations({ subtree: true }).length,
+			);
+		if (reducedMotionAnimations > 0) {
 			throw new Error("The installed Accordion did not suppress motion.");
 		}
 	} finally {
@@ -248,8 +487,8 @@ async function verifyInstalledAccordion(url: string) {
 	}
 }
 
-async function verifyInstalledSwitch(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledSwitch(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -355,8 +594,8 @@ async function verifyInstalledSwitch(url: string) {
 	}
 }
 
-async function verifyInstalledTooltip(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledTooltip(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -470,8 +709,8 @@ async function verifyInstalledTooltip(url: string) {
 	}
 }
 
-async function verifyInstalledInput(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledInput(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -509,8 +748,110 @@ async function verifyInstalledInput(url: string) {
 	}
 }
 
-async function verifyInstalledFileUpload(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledButton(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const button = page.getByRole("button", { name: "Primary action" });
+
+		await button.evaluate((element) => {
+			let activations = 0;
+			element.addEventListener("click", () => {
+				activations += 1;
+				element.setAttribute("data-activations", String(activations));
+			});
+		});
+		await button.focus();
+		await page.keyboard.press("Enter");
+		if ((await button.getAttribute("data-activations")) !== "1") {
+			throw new Error("The installed Button did not activate with Enter.");
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		if (
+			(await button.evaluate(
+				(element) => getComputedStyle(element).transitionProperty,
+			)) !== "none"
+		) {
+			throw new Error("The installed Button did not suppress motion.");
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Button has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
+async function verifyInstalledTabs(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const overview = page.getByRole("tab", { name: "Overview" });
+		const activity = page.getByRole("tab", { name: "Activity" });
+
+		await overview.focus();
+		await page.keyboard.press("ArrowRight");
+		if (
+			!(await activity.evaluate(
+				(element) => document.activeElement === element,
+			))
+		) {
+			throw new Error("The installed Tabs did not move focus with ArrowRight.");
+		}
+
+		await page.keyboard.press("Enter");
+		if (
+			(await activity.getAttribute("aria-selected")) !== "true" ||
+			!(
+				await page.getByRole("tabpanel", { name: "Activity" }).textContent()
+			)?.includes("Activity content")
+		) {
+			throw new Error(
+				"The installed Tabs did not respond to arrow key navigation.",
+			);
+		}
+
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		const indicator = page.locator('[data-slot="aeri-tabs-indicator"]');
+		if (
+			(await indicator.evaluate(
+				(element) => getComputedStyle(element).transitionProperty,
+			)) !== "none"
+		) {
+			throw new Error("The installed Tabs did not suppress motion.");
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Tabs have accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
+async function verifyInstalledFileUpload(
+	url: string,
+	browserType: BrowserType,
+) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -561,8 +902,11 @@ async function verifyInstalledFileUpload(url: string) {
 	}
 }
 
-async function verifyInstalledSettingsForm(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledSettingsForm(
+	url: string,
+	browserType: BrowserType,
+) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -630,8 +974,11 @@ async function verifyInstalledSettingsForm(url: string) {
 	}
 }
 
-async function verifyInstalledCommandPalette(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledCommandPalette(
+	url: string,
+	browserType: BrowserType,
+) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -698,8 +1045,11 @@ async function verifyInstalledCommandPalette(url: string) {
 	}
 }
 
-async function verifyInstalledNumberTicker(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledNumberTicker(
+	url: string,
+	browserType: BrowserType,
+) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -818,8 +1168,8 @@ async function verifyInstalledNumberTicker(url: string) {
 	}
 }
 
-async function verifyInstalledTextSwap(url: string) {
-	const browser = await chromium.launch();
+async function verifyInstalledTextSwap(url: string, browserType: BrowserType) {
+	const browser = await browserType.launch();
 
 	try {
 		const context = await browser.newContext();
@@ -889,7 +1239,6 @@ let registry: Awaited<ReturnType<typeof serveRegistry>> | undefined;
 let consumerServer: ReturnType<typeof startConsumerProject> | undefined;
 
 try {
-	await runPnpm(["run", "registry:build"], repositoryRoot);
 	cpSync(fixtureDirectory, consumerProjectDirectory, { recursive: true });
 	const ordinaryButtonPath = join(
 		consumerProjectDirectory,
@@ -900,44 +1249,20 @@ try {
 	);
 	const ordinaryButtonSource = readFileSync(ordinaryButtonPath, "utf8");
 	registry = await serveRegistry();
-	const componentsConfigPath = join(
-		consumerProjectDirectory,
-		"components.json",
-	);
-	const componentsConfig = JSON.parse(
-		readFileSync(componentsConfigPath, "utf8"),
-	) as {
-		registries?: Record<string, string>;
-	};
+	configureRegistry(consumerProjectDirectory, registry.url);
+	await verifyIndependentInstallations(registry.url);
 
-	writeFileSync(
-		componentsConfigPath,
-		`${JSON.stringify(
-			{
-				...componentsConfig,
-				registries: {
-					...componentsConfig.registries,
-					"@aeri-ui": registry.url,
-				},
-			},
-			null,
-			2,
-		)}\n`,
-	);
-
-	await runPnpm(["install", "--frozen-lockfile"]);
-	await runPnpm(["exec", "shadcn", "--help"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/command-palette", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/file-upload", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/settings-form", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/switch", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tabs", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/text-swap", "--yes"]);
-	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/tooltip", "--yes"]);
+	await runConsumerProject("install", []);
+	await runConsumerProject("exec", ["shadcn", "--help"]);
+	for (const item of launchSet) {
+		console.log(`Installing ${item.name} into the journey fixture.`);
+		await runConsumerProject("exec", [
+			"shadcn",
+			"add",
+			`@aeri-ui/${item.name}`,
+			"--yes",
+		]);
+	}
 
 	if (readFileSync(ordinaryButtonPath, "utf8") !== ordinaryButtonSource) {
 		throw new Error(
@@ -945,51 +1270,35 @@ try {
 		);
 	}
 
-	const installedSources = [
-		["accordion", "export {"],
-		["button", "export { Button"],
-		["command-palette", "export {\n\tCommandPalette,"],
-		["file-upload", "export {\n\tFileUpload,"],
-		["settings-form", "export {\n\tSettingsForm,"],
-		["input", "export { Input"],
-		["number-ticker", "export { NumberTicker"],
-		["switch", "export { Switch, SwitchThumb"],
-		["tabs", "export {\n\tTabs,"],
-		["text-swap", "export { TextSwap"],
-		["tooltip", "export {\n\tTooltip,"],
-	] as const;
-
-	for (const [itemName, expectedExport] of installedSources) {
-		const installedSourcePath = join(
+	for (const item of launchSet) {
+		verifyInstalledSource(
 			consumerProjectDirectory,
-			"src",
-			"components",
-			"aeri",
-			`${itemName}.tsx`,
+			item.name,
+			item.expectedExport,
 		);
-
-		if (!readFileSync(installedSourcePath, "utf8").includes(expectedExport)) {
-			throw new Error(
-				`Installing ${itemName} did not write the Aeri owned source.`,
-			);
-		}
 	}
-	await runPnpm(["run", "check-types"]);
-	await runPnpm(["run", "build"]);
+	await runConsumerProject("run", ["check-types"]);
+	await runConsumerProject("run", ["build"]);
 	const consumerPort = await getAvailablePort();
 	consumerServer = startConsumerProject(consumerPort);
 	const consumerUrl = `http://127.0.0.1:${consumerPort}`;
 	await waitForConsumerProject(consumerUrl);
-	await verifyInstalledAccordion(consumerUrl);
-	await verifyInstalledCommandPalette(consumerUrl);
-	await verifyInstalledFileUpload(consumerUrl);
-	await verifyInstalledSettingsForm(consumerUrl);
-	await verifyInstalledInput(consumerUrl);
-	await verifyInstalledNumberTicker(consumerUrl);
-	await verifyInstalledSwitch(consumerUrl);
-	await verifyInstalledTextSwap(consumerUrl);
-	await verifyInstalledTooltip(consumerUrl);
-	console.log("Consumer Project fixture passed.");
+	const browserType = browserTypes[browserName];
+	await verifyConsumerThemesAndLayout(consumerUrl, browserType);
+	await verifyInstalledAccordion(consumerUrl, browserType);
+	await verifyInstalledButton(consumerUrl, browserType);
+	await verifyInstalledCommandPalette(consumerUrl, browserType);
+	await verifyInstalledFileUpload(consumerUrl, browserType);
+	await verifyInstalledSettingsForm(consumerUrl, browserType);
+	await verifyInstalledInput(consumerUrl, browserType);
+	await verifyInstalledNumberTicker(consumerUrl, browserType);
+	await verifyInstalledSwitch(consumerUrl, browserType);
+	await verifyInstalledTabs(consumerUrl, browserType);
+	await verifyInstalledTextSwap(consumerUrl, browserType);
+	await verifyInstalledTooltip(consumerUrl, browserType);
+	console.log(
+		`Consumer Project fixture passed for ${packageManager} and ${browserName}.`,
+	);
 } finally {
 	await stopConsumerProject(consumerServer);
 	await registry?.close();
