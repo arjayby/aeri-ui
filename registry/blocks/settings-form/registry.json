@@ -1,0 +1,50 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "settings-form",
+			"type": "registry:block",
+			"title": "Settings Form",
+			"description": "A form library independent Settings Form with consumer owned validation and save callbacks.",
+			"author": "Aeri UI",
+			"dependencies": [],
+			"registryDependencies": [
+				"@aeri-ui/button",
+				"@aeri-ui/input",
+				"@aeri-ui/switch"
+			],
+			"files": [
+				{
+					"path": "settings-form.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/settings-form.tsx"
+				}
+			],
+			"categories": ["block", "form", "feedback"],
+			"docs": "## Purpose\n\nUse Settings Form when a Builder needs a small, save based settings surface without adopting a form library or binding the interface to a backend. The Builder owns validation, persistence, authentication, and all product policy.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. The Source Registry also installs the Aeri Button, Input, and Switch Registry Items used by the Block. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`SettingsForm` requires `initialValues` with `email` and `productUpdates`, plus an `onSubmit` callback that may return a Promise. It sends edits to `onValuesChange`; `onValidate` returns a partial `SettingsFormErrors` object. Resolve `onSubmit` to show saved feedback or reject it to show failure feedback. Optional `onSaveSuccess` and `onSaveFailure` observe either outcome. Use `labels` to provide every visible and assistive string. The Block composes Aeri Input, Switch with SwitchThumb, and Button.\n\n## Dependencies and client boundary\n\nSettings Form has no runtime dependency beyond React and the published Aeri Button, Input, and Switch source it declares as Registry dependencies. It manages local form, validation, status, and focus state, so it creates a client boundary. The Catalog Live Preview supplies only local callbacks and never calls a remote service.\n\n## Accessibility\n\nThe native form follows a keyboard first order: email, product update switch, then save. Input labels, descriptions, errors, switch description, and save status are programmatically associated. Validation errors announce immediately and focus the first invalid control. A polite atomic status communicates unsaved, saving, saved, failed, and unchanged states. The Button disables repeated saves while pending, and all interaction feedback is also available as text.\n\n## Motion and performance\n\nSettings Form relies on the composed Item motion only. State transitions occur immediately, and reduced motion removes the nonessential composed transitions and loading spinner. Validation and status updates are synchronous apart from the Builder owned submission Promise. There is no form library, timer, animation frame loop, request, or post interaction work in installed source.\n\n## Consumer Theme\n\nSettings Form uses Consumer Theme semantic colors, typography, borders, radius, and focus ring through its published Items. It adds no global stylesheet and does not rewrite Consumer Theme tokens.\n\n## Responsive, localization, and RTL\n\nThe form fills its available inline size, wraps the status and save action on narrow layouts, and inherits text direction. All labels, descriptions, validation messages, and state messages can be supplied through `labels` and `onValidate`, so Builders can localize them. No directional motion is used.\n\n## Compatibility\n\nSettings Form supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, shadcn conventions, and the published Aeri Button, Input, and Switch source in evergreen browsers. It works offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "client",
+					"implementation": "native",
+					"publishedAt": "2026-07-29"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "Settings Form preview",
+					"interaction": "Edit the settings, submit an invalid email, then save a valid value or include failure in the email to observe the local error state.",
+					"fixture": "preview.tsx"
+				},
+				"example": "import { SettingsForm } from \"@/components/aeri/settings-form\";\n\n<SettingsForm\n  initialValues={{ email: user.email, productUpdates: user.productUpdates }}\n  onSubmit={async (values) => saveSettings(values)}\n  onValidate={(values) =>\n    values.email.includes(\"@\") ? undefined : { email: \"Enter a valid email address.\" }\n  }\n/>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-29",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/blocks/settings-form",
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/blocks/settings-form/settings-form.tsx"
+			}
+		}
+	]
+}

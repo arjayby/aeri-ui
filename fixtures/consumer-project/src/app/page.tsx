@@ -17,6 +17,7 @@ import {
 import { FileUpload, type FileUploadFile } from "@/components/aeri/file-upload";
 import { Input } from "@/components/aeri/input";
 import { NumberTicker } from "@/components/aeri/number-ticker";
+import { SettingsForm } from "@/components/aeri/settings-form";
 import { Switch, SwitchThumb } from "@/components/aeri/switch";
 import {
 	Tabs,
@@ -118,6 +119,29 @@ export default function Home() {
 							status: "uploading" as const,
 						})),
 					])
+				}
+			/>
+			<h2>Notification settings</h2>
+			<SettingsForm
+				initialValues={{
+					email: "notifications@example.com",
+					productUpdates: true,
+				}}
+				labels={{
+					emailLabel: "Settings email",
+					save: "Save notification settings",
+					saved: "Notification settings saved.",
+					saveFailed: "Notification settings could not be saved.",
+				}}
+				onSubmit={(values) => {
+					if (values.email.includes("failure")) {
+						return Promise.reject(new Error("Consumer save failed."));
+					}
+				}}
+				onValidate={(values) =>
+					values.email.includes("@")
+						? undefined
+						: { email: "Enter a valid settings email." }
 				}
 			/>
 			<h2>Order details</h2>
