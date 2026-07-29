@@ -10,9 +10,13 @@ import {
 	AccordionTrigger,
 } from "@/components/aeri/accordion";
 import { Button as AeriButton } from "@/components/aeri/button";
+import {
+	CommandPalette,
+	type CommandPaletteGroup,
+} from "@/components/aeri/command-palette";
 import { Input } from "@/components/aeri/input";
 import { NumberTicker } from "@/components/aeri/number-ticker";
-import { TextSwap } from "@/components/aeri/text-swap";
+import { Switch, SwitchThumb } from "@/components/aeri/switch";
 import {
 	Tabs,
 	TabsIndicator,
@@ -20,7 +24,7 @@ import {
 	TabsPanel,
 	TabsTab,
 } from "@/components/aeri/tabs";
-import { Switch, SwitchThumb } from "@/components/aeri/switch";
+import { TextSwap } from "@/components/aeri/text-swap";
 import {
 	Tooltip,
 	TooltipContent,
@@ -29,8 +33,21 @@ import {
 } from "@/components/aeri/tooltip";
 import { Button } from "@/components/ui/button";
 
+const commandGroups: CommandPaletteGroup[] = [
+	{
+		id: "navigation",
+		label: "Navigation",
+		commands: [
+			{ id: "projects", label: "Open projects" },
+			{ id: "reports", label: "Open reports" },
+		],
+	},
+];
+
 export default function Home() {
 	const [accountValue, setAccountValue] = useState(12450.75);
+	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+	const [selectedCommand, setSelectedCommand] = useState("None");
 	const [requestStatus, setRequestStatus] = useState("Ready");
 
 	return (
@@ -44,6 +61,17 @@ export default function Home() {
 			<AeriButton type="button" variant="destructive">
 				Delete item
 			</AeriButton>
+			<h2>Quick actions</h2>
+			<button onClick={() => setCommandPaletteOpen(true)} type="button">
+				Open installed command palette
+			</button>
+			<p role="status">Selected command: {selectedCommand}</p>
+			<CommandPalette
+				commands={commandGroups}
+				onOpenChange={setCommandPaletteOpen}
+				onSelect={(command) => setSelectedCommand(command.id)}
+				open={commandPaletteOpen}
+			/>
 			<h2>Order details</h2>
 			<Accordion defaultValue={["shipping"]}>
 				<AccordionItem value="shipping">
