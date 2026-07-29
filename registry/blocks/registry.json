@@ -1,5 +1,5 @@
 {
 	"$schema": "https://ui.shadcn.com/schema/registry.json",
-	"include": ["command-palette/registry.json"],
+	"include": ["command-palette/registry.json", "file-upload/registry.json"],
 	"items": []
 }
