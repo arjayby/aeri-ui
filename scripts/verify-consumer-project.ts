@@ -321,6 +321,12 @@ async function verifyConsumerThemesAndLayout(
 
 			const page = await context.newPage();
 			await page.goto(url);
+			if (environment.rtl) {
+				await page.locator("html").evaluate((element) => {
+					element.dir = "rtl";
+					element.lang = "ar";
+				});
+			}
 			if (
 				!(await page.evaluate(
 					({ colorScheme, rtl }) =>
