@@ -14,6 +14,7 @@ import {
 	CommandPalette,
 	type CommandPaletteGroup,
 } from "@/components/aeri/command-palette";
+import { FileUpload, type FileUploadFile } from "@/components/aeri/file-upload";
 import { Input } from "@/components/aeri/input";
 import { NumberTicker } from "@/components/aeri/number-ticker";
 import { Switch, SwitchThumb } from "@/components/aeri/switch";
@@ -47,6 +48,7 @@ const commandGroups: CommandPaletteGroup[] = [
 export default function Home() {
 	const [accountValue, setAccountValue] = useState(12450.75);
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+	const [uploadedFiles, setUploadedFiles] = useState<FileUploadFile[]>([]);
 	const [selectedCommand, setSelectedCommand] = useState("None");
 	const [requestStatus, setRequestStatus] = useState("Ready");
 
@@ -71,6 +73,52 @@ export default function Home() {
 				onOpenChange={setCommandPaletteOpen}
 				onSelect={(command) => setSelectedCommand(command.id)}
 				open={commandPaletteOpen}
+			/>
+			<h2>Attachments</h2>
+			<FileUpload
+				accept="image/png"
+				description="Attach up to two PNG receipts."
+				files={uploadedFiles}
+				label="Attach receipts"
+				maxFiles={2}
+				onFileCancel={(file) =>
+					setUploadedFiles((currentFiles) =>
+						currentFiles.map((currentFile) =>
+							currentFile.id === file.id
+								? { ...currentFile, status: "cancelled" }
+								: currentFile,
+						),
+					)
+				}
+				onFileRemove={(file) =>
+					setUploadedFiles((currentFiles) =>
+						currentFiles.filter((currentFile) => currentFile.id !== file.id),
+					)
+				}
+				onFileRetry={(file) =>
+					setUploadedFiles((currentFiles) =>
+						currentFiles.map((currentFile) =>
+							currentFile.id === file.id
+								? {
+										...currentFile,
+										progress: 0,
+										status: "uploading",
+									}
+								: currentFile,
+						),
+					)
+				}
+				onFilesSelected={(files) =>
+					setUploadedFiles((currentFiles) => [
+						...currentFiles,
+						...files.map((file) => ({
+							file,
+							id: `${file.name}-${file.lastModified}`,
+							progress: 0,
+							status: "uploading" as const,
+						})),
+					])
+				}
 			/>
 			<h2>Order details</h2>
 			<Accordion defaultValue={["shipping"]}>

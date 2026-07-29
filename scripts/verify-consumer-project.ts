@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|command-palette|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
+			/^\/r\/(accordion|button|command-palette|file-upload|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -511,6 +511,58 @@ async function verifyInstalledInput(url: string) {
 	}
 }
 
+async function verifyInstalledFileUpload(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const picker = page.getByLabel("Attach receipts");
+		await picker.setInputFiles({
+			name: "receipt.png",
+			mimeType: "image/png",
+			buffer: Buffer.from("receipt"),
+		});
+		const file = page.getByRole("listitem").filter({ hasText: "receipt.png" });
+
+		if (
+			(await file
+				.getByRole("progressbar", { name: "receipt.png upload progress" })
+				.getAttribute("value")) !== "0"
+		) {
+			throw new Error(
+				"The installed File Upload did not expose consumer owned progress.",
+			);
+		}
+
+		await file.getByRole("button", { name: "Cancel" }).click();
+		if (!(await file.getByText("Cancelled", { exact: true }).isVisible())) {
+			throw new Error(
+				"The installed File Upload did not call the consumer cancellation callback.",
+			);
+		}
+
+		await file.getByRole("button", { name: "Retry" }).click();
+		if (!(await file.getByText("Uploading", { exact: true }).isVisible())) {
+			throw new Error(
+				"The installed File Upload did not call the consumer retry callback.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed File Upload has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
 async function verifyInstalledCommandPalette(url: string) {
 	const browser = await chromium.launch();
 
@@ -808,6 +860,7 @@ try {
 	await runPnpm(["exec", "shadcn", "--help"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/command-palette", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/file-upload", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
@@ -826,6 +879,7 @@ try {
 		["accordion", "export {"],
 		["button", "export { Button"],
 		["command-palette", "export {\n\tCommandPalette,"],
+		["file-upload", "export {\n\tFileUpload,"],
 		["input", "export { Input"],
 		["number-ticker", "export { NumberTicker"],
 		["switch", "export { Switch, SwitchThumb"],
@@ -857,6 +911,7 @@ try {
 	await waitForConsumerProject(consumerUrl);
 	await verifyInstalledAccordion(consumerUrl);
 	await verifyInstalledCommandPalette(consumerUrl);
+	await verifyInstalledFileUpload(consumerUrl);
 	await verifyInstalledInput(consumerUrl);
 	await verifyInstalledNumberTicker(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);

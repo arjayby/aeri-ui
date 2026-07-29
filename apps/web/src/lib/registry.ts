@@ -1,6 +1,7 @@
 import generatedAccordion from "../../public/r/accordion.json";
 import generatedButton from "../../public/r/button.json";
 import generatedCommandPalette from "../../public/r/command-palette.json";
+import generatedFileUpload from "../../public/r/file-upload.json";
 import generatedInput from "../../public/r/input.json";
 import generatedNumberTicker from "../../public/r/number-ticker.json";
 import generatedSwitch from "../../public/r/switch.json";
@@ -15,6 +16,8 @@ const accordionSource = generatedAccordion.files[0]?.content;
 const buttonSource = generatedButton.files[0]?.content;
 const commandPalette = getRegistryItemByName("command-palette");
 const commandPaletteSource = generatedCommandPalette.files[0]?.content;
+const fileUpload = getRegistryItemByName("file-upload");
+const fileUploadSource = generatedFileUpload.files[0]?.content;
 const input = getRegistryItemByName("input");
 const inputSource = generatedInput.files[0]?.content;
 const numberTicker = getRegistryItemByName("number-ticker");
@@ -38,6 +41,10 @@ if (!buttonSource) {
 
 if (!commandPaletteSource) {
 	throw new Error("The generated Command Palette source is missing.");
+}
+
+if (!fileUploadSource) {
+	throw new Error("The generated File Upload source is missing.");
 }
 
 if (!inputSource) {
@@ -71,6 +78,8 @@ export {
 	buttonSource,
 	commandPalette,
 	commandPaletteSource,
+	fileUpload,
+	fileUploadSource,
 	input,
 	inputSource,
 	numberTicker,

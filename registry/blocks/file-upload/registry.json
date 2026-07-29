@@ -1,0 +1,45 @@
+{
+	"$schema": "https://ui.shadcn.com/schema/registry.json",
+	"items": [
+		{
+			"name": "file-upload",
+			"type": "registry:block",
+			"title": "File Upload",
+			"description": "A backend independent file picker and drop zone with consumer owned upload state.",
+			"author": "Aeri UI",
+			"dependencies": [],
+			"files": [
+				{
+					"path": "file-upload.tsx",
+					"type": "registry:ui",
+					"target": "components/aeri/file-upload.tsx"
+				}
+			],
+			"categories": ["block", "form", "feedback"],
+			"docs": "## Purpose\n\nUse File Upload when your application owns file transfer and persistence. It accepts files through a picker or drop zone, validates them locally, and exposes callbacks without requiring a backend.\n\n## Installation\n\nInstall with the Aeri UI registry command shown on this Item Page. Preview installations configure the Aeri UI registry URL in `components.json`.\n\n## API and anatomy\n\n`FileUpload` accepts an `accept` string, `maxFileSize` in bytes, `maxFiles`, visible `label` and `description`, optional `disabled` state, and a controlled `files` array. Each `FileUploadFile` has a stable `id`, browser `file`, `status`, optional `progress`, and optional error. `onFilesSelected` receives only valid selections. `onFileCancel`, `onFileRetry`, and `onFileRemove` report user intent so the consumer can update its own upload state. Use `labels` for action, drop zone, selected list, and progress labels, plus the three validation messages for localized copy.\n\n## Dependencies and client boundary\n\nFile Upload has no runtime dependency beyond React. It manages short lived drag feedback and file input validation, so it creates a client boundary. The Catalog Live Preview only supplies local demonstration state and callbacks.\n\n## Accessibility\n\nThe file input has a visible label, optional description, keyboard accessible browse button, and associated validation error. Drop feedback does not replace the picker, so keyboard users have the same selection path. Each active upload exposes a consumer labelled progress element, while a polite atomic status announces every state change. Error status is also announced assertively, and cancel, retry, and remove are ordinary named buttons. Keep consumer supplied labels, validation messages, and action labels meaningful in the application language.\n\n## Motion and performance\n\nDrop feedback uses a short native color transition that is removed for reduced motion. Progress is rendered from the consumer owned value. There is no timer, animation frame loop, remote request, or post interaction work after state settles.\n\n## Consumer Theme\n\nFile Upload uses Consumer Theme semantic colors, typography, radius, borders, and focus ring without adding a global stylesheet or rewriting tokens.\n\n## Responsive, localization, and RTL\n\nThe drop zone and file list fill available inline size, wrap actions on narrow layouts, and use logical start alignment through inherited direction. Supply every visible and assistive string through `label`, `description`, validation messages, and `labels`. No directional motion is used.\n\n## Compatibility\n\nFile Upload supports Next.js 16 App Router Consumer Projects using React 19, Tailwind CSS 4, and shadcn conventions in evergreen browsers. It works offline after installation.",
+			"meta": {
+				"catalog": {
+					"boundary": "client",
+					"implementation": "native",
+					"publishedAt": "2026-07-29"
+				},
+				"lifecycle": "preview",
+				"preview": {
+					"label": "File Upload preview",
+					"interaction": "Choose or drop a file, then advance or fail the local demonstration upload to observe progress, retry, cancellation, and success.",
+					"fixture": "preview.tsx"
+				},
+				"example": "import { FileUpload } from \"@/components/aeri/file-upload\";\n\n<FileUpload\n  accept=\"image/png,image/jpeg\"\n  files={files}\n  maxFileSize={5 * 1024 * 1024}\n  maxFiles={3}\n  onFileCancel={(file) => cancelUpload(file.id)}\n  onFileRetry={(file) => retryUpload(file.id)}\n  onFilesSelected={(selectedFiles) => setFiles(createUploadItems(selectedFiles))}\n/>",
+				"changelog": [
+					{
+						"version": "0.1.0",
+						"date": "2026-07-29",
+						"summary": "Initial Preview Item release."
+					}
+				],
+				"changelogUrl": "https://github.com/arjayby/aeri-ui/commits/main/registry/blocks/file-upload",
+				"sourceUrl": "https://github.com/arjayby/aeri-ui/tree/main/registry/blocks/file-upload/file-upload.tsx"
+			}
+		}
+	]
+}
