@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+main {
+	max-inline-size: 100%;
+	min-inline-size: 0;
+	overflow-x: clip;
+	padding: 1rem;
+}
