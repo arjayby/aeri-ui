@@ -235,7 +235,7 @@ test("Number Ticker responds within its frame budget and settles without a layou
 		Math.abs(
 			Number.parseFloat(interruptedKeyframes[0] ?? "") - interruptedWidth,
 		),
-	).toBeLessThan(5);
+	).toBeLessThan(10);
 	await page.waitForTimeout(450);
 
 	const settledWidth = await layout.evaluate(

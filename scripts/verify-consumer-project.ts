@@ -814,9 +814,9 @@ async function verifyInstalledTabs(url: string, browserType: BrowserType) {
 		await page.keyboard.press("Enter");
 		if (
 			(await activity.getAttribute("aria-selected")) !== "true" ||
-			!(await page.getByRole("tabpanel").textContent())?.includes(
-				"Activity content",
-			)
+			!(
+				await page.getByRole("tabpanel", { name: "Activity" }).textContent()
+			)?.includes("Activity content")
 		) {
 			throw new Error(
 				"The installed Tabs did not respond to arrow key navigation.",
