@@ -84,17 +84,27 @@ jobs:
       - run: pnpm run test:catalog
 
   consumer-project:
-    name: Consumer Project harness
+    name: Consumer Project (${{ matrix.package-manager }}, ${{ matrix.browser }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package-manager: [npm, pnpm, yarn, bun]
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
           version: 10.28.0
+      - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: corepack prepare yarn@4.10.3 --activate
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       - run: pnpm run test:consumer
+        env:
+          CONSUMER_BROWSER: ${{ matrix.browser }}
+          CONSUMER_PACKAGE_MANAGER: ${{ matrix.package-manager }}

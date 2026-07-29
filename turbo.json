@@ -1,6 +1,10 @@
 {
 	"$schema": "https://turbo.build/schema.json",
-	"globalPassThroughEnv": ["PLAYWRIGHT_PORT"],
+	"globalPassThroughEnv": [
+		"PLAYWRIGHT_PORT",
+		"CONSUMER_BROWSER",
+		"CONSUMER_PACKAGE_MANAGER"
+	],
 	"ui": "tui",
 	"tasks": {
 		"build": {
