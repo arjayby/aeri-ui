@@ -804,6 +804,15 @@ async function verifyInstalledTabs(url: string, browserType: BrowserType) {
 		await overview.focus();
 		await page.keyboard.press("ArrowRight");
 		if (
+			!(await activity.evaluate(
+				(element) => document.activeElement === element,
+			))
+		) {
+			throw new Error("The installed Tabs did not move focus with ArrowRight.");
+		}
+
+		await page.keyboard.press("Enter");
+		if (
 			(await activity.getAttribute("aria-selected")) !== "true" ||
 			!(await page.getByRole("tabpanel").textContent())?.includes(
 				"Activity content",
