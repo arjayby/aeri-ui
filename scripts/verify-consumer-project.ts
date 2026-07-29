@@ -473,12 +473,13 @@ async function verifyInstalledAccordion(url: string, browserType: BrowserType) {
 
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await trigger.click();
-		const panel = page.getByRole("region", { name: "Shipping" });
-		if (
-			(await panel.evaluate(
-				(element) => getComputedStyle(element).transitionProperty,
-			)) !== "none"
-		) {
+		await page.waitForTimeout(50);
+		const reducedMotionAnimations = await page
+			.locator('[data-slot="aeri-accordion"]')
+			.evaluate(
+				(accordion) => accordion.getAnimations({ subtree: true }).length,
+			);
+		if (reducedMotionAnimations > 0) {
 			throw new Error("The installed Accordion did not suppress motion.");
 		}
 	} finally {
