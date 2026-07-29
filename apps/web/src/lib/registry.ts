@@ -4,6 +4,7 @@ import generatedCommandPalette from "../../public/r/command-palette.json";
 import generatedFileUpload from "../../public/r/file-upload.json";
 import generatedInput from "../../public/r/input.json";
 import generatedNumberTicker from "../../public/r/number-ticker.json";
+import generatedSettingsForm from "../../public/r/settings-form.json";
 import generatedSwitch from "../../public/r/switch.json";
 import generatedTabs from "../../public/r/tabs.json";
 import generatedTextSwap from "../../public/r/text-swap.json";
@@ -22,6 +23,8 @@ const input = getRegistryItemByName("input");
 const inputSource = generatedInput.files[0]?.content;
 const numberTicker = getRegistryItemByName("number-ticker");
 const numberTickerSource = generatedNumberTicker.files[0]?.content;
+const settingsForm = getRegistryItemByName("settings-form");
+const settingsFormSource = generatedSettingsForm.files[0]?.content;
 const switchItem = getRegistryItemByName("switch");
 const switchSource = generatedSwitch.files[0]?.content;
 const tabs = getRegistryItemByName("tabs");
@@ -55,6 +58,10 @@ if (!numberTickerSource) {
 	throw new Error("The generated Number Ticker source is missing.");
 }
 
+if (!settingsFormSource) {
+	throw new Error("The generated Settings Form source is missing.");
+}
+
 if (!switchSource) {
 	throw new Error("The generated Switch source is missing.");
 }
@@ -84,6 +91,8 @@ export {
 	inputSource,
 	numberTicker,
 	numberTickerSource,
+	settingsForm,
+	settingsFormSource,
 	switchItem,
 	switchSource,
 	tabs,

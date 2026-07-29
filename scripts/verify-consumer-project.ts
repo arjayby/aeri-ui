@@ -46,7 +46,7 @@ function runPnpm(args: string[], cwd = consumerProjectDirectory) {
 async function serveRegistry() {
 	const server = createServer((request, response) => {
 		const itemName = request.url?.match(
-			/^\/r\/(accordion|button|command-palette|file-upload|input|number-ticker|switch|tabs|text-swap|tooltip)\.json$/,
+			/^\/r\/(accordion|button|command-palette|file-upload|input|number-ticker|settings-form|switch|tabs|text-swap|tooltip)\.json$/,
 		)?.[1];
 
 		if (itemName) {
@@ -333,18 +333,16 @@ async function verifyInstalledSwitch(url: string) {
 		}
 
 		await page.waitForTimeout(300);
-		const activeAnimations = await page
-			.locator('[data-slot="aeri-switch"]')
-			.evaluate(
-				(switchRoot) => switchRoot.getAnimations({ subtree: true }).length,
-			);
+		const activeAnimations = await switchControl.evaluate(
+			(switchRoot) => switchRoot.getAnimations({ subtree: true }).length,
+		);
 		if (activeAnimations > 0) {
 			throw new Error("The installed Switch did not settle its animations.");
 		}
 
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await switchControl.click();
-		const thumb = page.locator('[data-slot="aeri-switch-thumb"]');
+		const thumb = switchControl.locator('[data-slot="aeri-switch-thumb"]');
 		if (
 			(await thumb.evaluate(
 				(element) => getComputedStyle(element).transitionProperty,
@@ -554,6 +552,75 @@ async function verifyInstalledFileUpload(url: string) {
 		if (accessibility.violations.length > 0) {
 			throw new Error(
 				`The installed File Upload has accessibility violations: ${accessibility.violations
+					.map((violation) => violation.id)
+					.join(", ")}`,
+			);
+		}
+	} finally {
+		await browser.close();
+	}
+}
+
+async function verifyInstalledSettingsForm(url: string) {
+	const browser = await chromium.launch();
+
+	try {
+		const context = await browser.newContext();
+		const page = await context.newPage();
+		await page.goto(url);
+		const form = page.locator('[data-slot="aeri-settings-form"]');
+		const email = page.getByRole("textbox", { name: "Settings email" });
+		const save = page.getByRole("button", {
+			name: "Save notification settings",
+		});
+
+		await email.fill("invalid-email");
+		await save.click();
+		if (
+			!(await page
+				.getByText("Enter a valid settings email.", { exact: true })
+				.isVisible()) ||
+			!(await email.evaluate((element) => element === document.activeElement))
+		) {
+			throw new Error(
+				"The installed Settings Form did not validate and focus its invalid email.",
+			);
+		}
+
+		await email.fill("consumer@example.com");
+		await save.click();
+		await form
+			.getByText("Notification settings saved.", { exact: true })
+			.waitFor();
+		if (
+			!(await form.getByRole("status").textContent())?.includes(
+				"Notification settings saved.",
+			)
+		) {
+			throw new Error(
+				"The installed Settings Form did not communicate a successful submission.",
+			);
+		}
+
+		await email.fill("failure@example.com");
+		await save.click();
+		await form
+			.getByText("Notification settings could not be saved.", { exact: true })
+			.waitFor();
+		if (
+			!(await page
+				.getByText("Notification settings could not be saved.", { exact: true })
+				.isVisible())
+		) {
+			throw new Error(
+				"The installed Settings Form did not communicate a failed submission.",
+			);
+		}
+
+		const accessibility = await new AxeBuilder({ page }).analyze();
+		if (accessibility.violations.length > 0) {
+			throw new Error(
+				`The installed Settings Form has accessibility violations: ${accessibility.violations
 					.map((violation) => violation.id)
 					.join(", ")}`,
 			);
@@ -863,6 +930,7 @@ try {
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/button", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/command-palette", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/file-upload", "--yes"]);
+	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/settings-form", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/accordion", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/input", "--yes"]);
 	await runPnpm(["exec", "shadcn", "add", "@aeri-ui/number-ticker", "--yes"]);
@@ -882,6 +950,7 @@ try {
 		["button", "export { Button"],
 		["command-palette", "export {\n\tCommandPalette,"],
 		["file-upload", "export {\n\tFileUpload,"],
+		["settings-form", "export {\n\tSettingsForm,"],
 		["input", "export { Input"],
 		["number-ticker", "export { NumberTicker"],
 		["switch", "export { Switch, SwitchThumb"],
@@ -914,6 +983,7 @@ try {
 	await verifyInstalledAccordion(consumerUrl);
 	await verifyInstalledCommandPalette(consumerUrl);
 	await verifyInstalledFileUpload(consumerUrl);
+	await verifyInstalledSettingsForm(consumerUrl);
 	await verifyInstalledInput(consumerUrl);
 	await verifyInstalledNumberTicker(consumerUrl);
 	await verifyInstalledSwitch(consumerUrl);

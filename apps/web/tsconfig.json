@@ -21,6 +21,13 @@
 		],
 		"paths": {
 			"@/*": ["./src/*"],
+			"@/components/aeri/button": [
+				"../../registry/components/button/button.tsx"
+			],
+			"@/components/aeri/input": ["../../registry/components/input/input.tsx"],
+			"@/components/aeri/switch": [
+				"../../registry/components/switch/switch.tsx"
+			],
 			"@aeri-ui/ui/*": ["../../packages/ui/src/*"],
 			"collections/*": ["./.source/*"]
 		}
