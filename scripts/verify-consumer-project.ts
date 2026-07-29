@@ -48,9 +48,14 @@ if (!(browserName in browserTypes)) {
 	throw new Error(`Unsupported Consumer Project browser: ${browserName}.`);
 }
 
-function run(command: string, args: string[], cwd = consumerProjectDirectory) {
+function run(
+	command: string,
+	args: string[],
+	cwd = consumerProjectDirectory,
+	env = process.env,
+) {
 	return new Promise<void>((resolve, reject) => {
-		const child = spawn(command, args, { cwd, stdio: "inherit" });
+		const child = spawn(command, args, { cwd, env, stdio: "inherit" });
 
 		child.once("error", reject);
 		child.once("exit", (code) => {
@@ -103,7 +108,14 @@ function runConsumerProject(
 ) {
 	const command = consumerProjectCommand(operation, args);
 
-	return run(command.command, command.args, cwd);
+	return run(
+		command.command,
+		command.args,
+		cwd,
+		packageManager === "yarn"
+			? { ...process.env, YARN_ENABLE_HARDENED_MODE: "0" }
+			: process.env,
+	);
 }
 
 async function serveRegistry() {
