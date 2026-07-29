@@ -139,6 +139,7 @@ test("Text Swap preserves layout, responds promptly, and stops after settling", 
 		Number(await processing.getAttribute("data-largest-frame")),
 	).toBeLessThan(50);
 
+	await page.getByText("Controls", { exact: true }).click();
 	const statusSelect = page.getByLabel("Example status");
 	const processingWidth = await layout.evaluate(
 		(element) => element.getBoundingClientRect().width,
