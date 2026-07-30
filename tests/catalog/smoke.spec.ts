@@ -146,6 +146,92 @@ test("Builder can read every migrated document in the unified Catalog", async ({
 	expect(missingResponse.status()).toBe(404);
 });
 
+test("Builder can evaluate the 1.0 release candidate without mistaking it for a stable release", async ({
+	page,
+}) => {
+	await page.goto("/docs/release-candidate");
+
+	await expect(
+		page.getByRole("heading", {
+			name: "Aeri UI 1.0 release candidate",
+			exact: true,
+		}),
+	).toBeVisible();
+	await expect(
+		page.getByText("This is not a stable 1.0 release.", { exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByText('"@aeri-ui": "https://aeriui.dev/r/{name}.json"', {
+			exact: true,
+		}),
+	).toBeVisible();
+	await expect(
+		page.getByText("npx shadcn@latest add https://aeriui.dev/r/button.json", {
+			exact: true,
+		}),
+	).toBeVisible();
+
+	for (const heading of [
+		"Source ownership",
+		"Support boundary",
+		"Update behavior",
+		"Privacy",
+		"Migration guarantees",
+	]) {
+		await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+	}
+});
+
+test("Builder sees the audited Preview Item contract on every Launch Set Item Page", async ({
+	page,
+	request,
+}) => {
+	const registryResponse = await request.get("/r/registry.json");
+	expect(registryResponse.ok()).toBeTruthy();
+	const registry = (await registryResponse.json()) as {
+		items: Array<{ categories: string[]; name: string; title: string }>;
+	};
+	expect(registry.items).toHaveLength(11);
+
+	for (const { categories, name, title } of registry.items) {
+		const collection = categories.includes("block") ? "blocks" : "components";
+		await page.goto(`/${collection}/${name}`);
+
+		await expect(
+			page.getByRole("heading", { name: title, exact: true }),
+		).toBeVisible();
+		await expect(page.getByText("Preview", { exact: true })).toBeVisible();
+		await expect(
+			page.getByText(
+				"Preview installation requires registry configuration until directory acceptance.",
+				{ exact: true },
+			),
+		).toBeVisible();
+
+		for (const [packageManager, command] of [
+			["npm", `npx shadcn@latest add @aeri-ui/${name}`],
+			["pnpm", `pnpm dlx shadcn@latest add @aeri-ui/${name}`],
+			["yarn", `yarn dlx shadcn@latest add @aeri-ui/${name}`],
+			["bun", `bunx --bun shadcn@latest add @aeri-ui/${name}`],
+		] as const) {
+			await page
+				.getByRole("tab", { name: packageManager, exact: true })
+				.click();
+			await expect(page.getByText(command, { exact: true })).toBeVisible();
+		}
+
+		await expect(
+			page.getByRole("link", { name: "View on GitHub" }),
+		).toHaveAttribute(
+			"href",
+			`https://github.com/arjayby/aeri-ui/tree/main/registry/${collection}/${name}/${name}.tsx`,
+		);
+		await expect(
+			page.getByRole("heading", { name: "Changelog" }),
+		).toBeVisible();
+	}
+});
+
 test("Builder can search every current public destination", async ({
 	page,
 }) => {
@@ -168,18 +254,24 @@ test("Builder receives an empty state for searches", async ({ page }) => {
 });
 
 test("Builder can query the unified search index", async ({ request }) => {
-	const [buttonResponse, privacyResponse, helloResponse, introductionMarkdown] =
-		await Promise.all([
-			request.get("/api/search?query=Button"),
-			request.get("/api/search?query=Privacy"),
-			request.get("/api/search?query=Hello"),
-			request.get("/llms.mdx/docs/content.md"),
-		]);
+	const [
+		buttonResponse,
+		privacyResponse,
+		introductionResponse,
+		introductionMarkdown,
+	] = await Promise.all([
+		request.get("/api/search?query=Button"),
+		request.get("/api/search?query=Privacy"),
+		request.get("/api/search?query=Introduction"),
+		request.get("/llms.mdx/docs/content.md"),
+	]);
 
 	await expectSearchResult(buttonResponse, "/components/button");
 	await expectSearchResult(privacyResponse, "/docs/privacy");
-	await expectSearchResult(helloResponse, "/docs");
-	expect(await introductionMarkdown.text()).toContain("Welcome to the docs!");
+	await expectSearchResult(introductionResponse, "/docs");
+	expect(await introductionMarkdown.text()).toContain(
+		"The complete Launch Set contains eight Components and three Blocks.",
+	);
 });
 
 test("Builder can access the machine readable introduction", async ({

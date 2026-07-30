@@ -1249,10 +1249,14 @@ try {
 	);
 	const ordinaryButtonSource = readFileSync(ordinaryButtonPath, "utf8");
 	registry = await serveRegistry();
-	configureRegistry(consumerProjectDirectory, registry.url);
 	await verifyIndependentInstallations(registry.url);
 
 	await runConsumerProject("install", []);
+	const directButtonUrl = registry.url.replace("{name}", "button");
+	console.log(`Installing button directly from ${directButtonUrl}.`);
+	await runConsumerProject("exec", ["shadcn", "add", directButtonUrl, "--yes"]);
+	verifyInstalledSource(consumerProjectDirectory, "button", "export { Button");
+	configureRegistry(consumerProjectDirectory, registry.url);
 	await runConsumerProject("exec", ["shadcn", "--help"]);
 	for (const item of launchSet) {
 		console.log(`Installing ${item.name} into the journey fixture.`);
