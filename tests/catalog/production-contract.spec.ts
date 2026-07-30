@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const representativeRoutes = [
 	"/",
@@ -9,6 +9,14 @@ const representativeRoutes = [
 ] as const;
 const initialScriptBudgetBytes = 500_000;
 const interactionResponseBudgetMilliseconds = 200;
+
+async function openSearch(page: Page) {
+	const searchButton = page.getByRole("button", { name: "Search" });
+	if (!(await searchButton.isVisible())) {
+		await page.locator("header summary").click();
+	}
+	return searchButton;
+}
 
 test.describe("@catalog-compatibility Catalog production contract", () => {
 	test("Builder can complete representative Catalog journeys", async ({
@@ -29,7 +37,7 @@ test.describe("@catalog-compatibility Catalog production contract", () => {
 		).toBeVisible();
 
 		await page.goto("/docs");
-		await page.getByRole("button", { name: "Search" }).click();
+		await (await openSearch(page)).click();
 		await page.getByPlaceholder("Search").fill("Privacy");
 		await page.getByRole("button", { name: "Privacy Notice" }).click();
 		await expect(page).toHaveURL(/\/docs\/privacy$/);
@@ -43,6 +51,7 @@ test.describe("@catalog-compatibility Catalog production contract", () => {
 		const preview = page.locator("[data-button-preview]");
 		const button = preview.getByRole("button", { name: "Save changes" });
 
+		await page.getByText("Controls", { exact: true }).click();
 		await button.focus();
 		await expect(button).toBeFocused();
 		await button.press("Enter");
@@ -57,9 +66,7 @@ test.describe("@catalog-compatibility Catalog production contract", () => {
 	}) => {
 		for (const route of representativeRoutes) {
 			await page.goto(route);
-			const results = await new AxeBuilder({ page })
-				.withTags(["wcag2a", "wcag2aa", "wcag22aa"])
-				.analyze();
+			const results = await new AxeBuilder({ page }).analyze();
 			expect(
 				results.violations,
 				`${route} accessibility violations: ${results.violations
@@ -122,8 +129,9 @@ test.describe("@catalog-compatibility Catalog production contract", () => {
 		page,
 	}) => {
 		await page.goto("/docs");
+		const searchButton = await openSearch(page);
 		const startedAt = performance.now();
-		await page.getByRole("button", { name: "Search" }).click();
+		await searchButton.click();
 		await expect(
 			page
 				.getByText("Opening search…", { exact: true })

@@ -123,9 +123,16 @@ export default function ButtonPage() {
 						</p>
 						<CopyButton label="usage example" value={example} />
 					</div>
-					<pre className="overflow-x-auto p-5 text-sm leading-7">
-						<code>{example}</code>
-					</pre>
+					<section
+						aria-label="Button usage example"
+						className="overflow-x-auto"
+						// biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must be able to scroll the code sample.
+						tabIndex={0}
+					>
+						<pre className="p-5 text-sm leading-7">
+							<code>{example}</code>
+						</pre>
+					</section>
 				</div>
 			</section>
 
@@ -178,7 +185,12 @@ export default function ButtonPage() {
 				>
 					API reference
 				</h2>
-				<div className="overflow-x-auto rounded-2xl border border-border/70">
+				<section
+					aria-label="Button API reference"
+					className="overflow-x-auto rounded-2xl border border-border/70"
+					// biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must be able to scroll the API table.
+					tabIndex={0}
+				>
 					<table className="w-full min-w-xl text-left text-sm">
 						<thead className="bg-muted/50 text-muted-foreground">
 							<tr>
@@ -236,7 +248,7 @@ export default function ButtonPage() {
 							</tr>
 						</tbody>
 					</table>
-				</div>
+				</section>
 			</section>
 
 			<section
