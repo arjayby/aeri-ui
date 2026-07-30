@@ -24,7 +24,11 @@ export function CopyableCommand({ label, value }: CopyableCommandProps) {
 
 	return (
 		<div className="flex min-w-0 items-center justify-between gap-4 rounded-xl border border-border/70 bg-muted/40 px-4 py-3 text-sm">
-			<code className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-xs">
+			<code
+				className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-xs"
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must be able to scroll the command.
+				tabIndex={0}
+			>
 				{value}
 			</code>
 			<Button

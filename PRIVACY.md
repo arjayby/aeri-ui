@@ -6,7 +6,7 @@ This notice covers the public Aeri UI Catalog at `aeriui.dev`, including its doc
 
 ## Limited telemetry
 
-The Catalog does not currently collect telemetry. If telemetry is enabled in production, it may use only the approved aggregate Vercel services: sampled Vercel Speed Insights for Core Web Vitals and Vercel Web Analytics for aggregate traffic measurement. These services help maintain Catalog reliability and performance.
+Vercel deployments use only the approved aggregate Vercel services: sampled Vercel Speed Insights for Core Web Vitals and Vercel Web Analytics for aggregate traffic measurement. These services help maintain Catalog reliability and performance.
 
 We do not use session replay, advertising pixels, user profiling, cross site tracking, or custom behavioral event collection. Catalog functionality does not depend on telemetry. If telemetry fails or is blocked, the Catalog, documentation, search, Live Previews, and Registry delivery continue to work.
 

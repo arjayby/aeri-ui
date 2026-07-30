@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const webPort = Number(process.env.PLAYWRIGHT_PORT ?? 3001);
+const catalogCompatibility = /@catalog-compatibility/;
 
 export default defineConfig({
 	testDir: ".",
@@ -19,9 +20,44 @@ export default defineConfig({
 			name: "chromium",
 			use: { ...devices["Desktop Chrome"] },
 		},
+		{
+			name: "chromium-narrow",
+			grep: catalogCompatibility,
+			use: {
+				...devices["Desktop Chrome"],
+				viewport: { width: 390, height: 844 },
+			},
+		},
+		{
+			name: "firefox",
+			grep: catalogCompatibility,
+			use: { ...devices["Desktop Firefox"] },
+		},
+		{
+			name: "firefox-narrow",
+			grep: catalogCompatibility,
+			use: {
+				...devices["Desktop Firefox"],
+				viewport: { width: 390, height: 844 },
+			},
+		},
+		{
+			name: "webkit",
+			grep: catalogCompatibility,
+			use: { ...devices["Desktop Safari"] },
+		},
+		{
+			name: "webkit-narrow",
+			grep: catalogCompatibility,
+			use: {
+				...devices["Desktop Safari"],
+				viewport: { width: 390, height: 844 },
+			},
+		},
 	],
 	webServer: {
-		command: `pnpm --filter web exec next start --port ${webPort}`,
+		command: `PORT=${webPort} HOSTNAME=127.0.0.1 node .next/standalone/apps/web/server.js`,
+		cwd: "apps/web",
 		url: `http://127.0.0.1:${webPort}`,
 		reuseExistingServer: !process.env.CI,
 	},
