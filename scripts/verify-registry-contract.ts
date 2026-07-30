@@ -5,12 +5,26 @@ import { fileURLToPath } from "node:url";
 import { launchSetNames } from "./launch-set";
 
 type RegistryItem = {
+	$schema?: string;
+	categories?: string[];
+	description?: string;
 	dependencies?: string[];
 	docs?: string;
-	files?: Array<{ content?: string; path: string; target?: string }>;
-	meta?: { lifecycle?: string; sourceUrl?: string };
+	files?: Array<{
+		content?: string;
+		path: string;
+		target?: string;
+		type?: string;
+	}>;
+	meta?: {
+		changelog?: Array<{ date?: string; summary?: string; version?: string }>;
+		lifecycle?: string;
+		sourceUrl?: string;
+	};
 	name: string;
 	registryDependencies?: string[];
+	title?: string;
+	type?: string;
 };
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -46,6 +60,15 @@ function readPayload(name: string) {
 
 function hasSameValues(first: unknown, second: unknown) {
 	return JSON.stringify(first) === JSON.stringify(second);
+}
+
+function omitFileContent(item: RegistryItem): RegistryItem {
+	const { $schema: _schema, ...registryItem } = item;
+
+	return {
+		...registryItem,
+		files: item.files?.map(({ content: _content, ...file }) => file),
+	};
 }
 
 function verifyDocumentation(item: RegistryItem) {
@@ -123,6 +146,14 @@ if (generatedItems.size !== launchSetNames.length) {
 	fail("the generated registry does not contain exactly the Launch Set.");
 }
 
+for (const item of generatedRegistry.items) {
+	for (const file of item.files ?? []) {
+		if ("content" in file) {
+			fail(`${item.name} exposes file content in the public registry catalog.`);
+		}
+	}
+}
+
 for (const name of launchSetNames) {
 	const item = generatedItems.get(name);
 	const payload = readPayload(name);
@@ -132,15 +163,8 @@ for (const name of launchSetNames) {
 	if (payload.name !== name) {
 		fail(`${name} does not resolve from its canonical registry address.`);
 	}
-	for (const property of [
-		"dependencies",
-		"docs",
-		"meta",
-		"registryDependencies",
-	] as const) {
-		if (!hasSameValues(payload[property], item[property])) {
-			fail(`${name} endpoint payload drifted in ${property}.`);
-		}
+	if (!hasSameValues(omitFileContent(payload), item)) {
+		fail(`${name} endpoint payload drifted from the public registry catalog.`);
 	}
 	if (
 		!item.meta?.lifecycle ||
@@ -153,6 +177,14 @@ for (const name of launchSetNames) {
 		`https://github.com/arjayby/aeri-ui/tree/main/${item.files?.[0]?.path}`
 	) {
 		fail(`${name} does not expose its canonical source address.`);
+	}
+	if (
+		!item.meta.changelog?.length ||
+		item.meta.changelog.some(
+			(entry) => !entry.date || !entry.summary || !entry.version,
+		)
+	) {
+		fail(`${name} does not expose a complete changelog.`);
 	}
 
 	verifyDocumentation(item);

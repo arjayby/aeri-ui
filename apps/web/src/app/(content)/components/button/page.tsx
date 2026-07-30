@@ -6,7 +6,8 @@ import { ContentPageHeader } from "@/components/content-page-header";
 import { CopyButton } from "@/components/copy-button";
 import { InstallCommand } from "@/components/install-command";
 import { LazyButtonPreview } from "@/components/lazy-button-preview";
-import { catalogItems } from "@/lib/catalog";
+import { PreviewInstallNotice } from "@/components/preview-install-notice";
+import { catalogItems, type CatalogLifecycle } from "@/lib/catalog";
 import { button, buttonSource } from "@/lib/registry";
 
 const documentation = button.docs
@@ -19,7 +20,7 @@ const documentation = button.docs
 	})
 	.filter((section) => section.heading !== "Installation");
 
-const lifecycle = button.meta.lifecycle as string;
+const lifecycle = button.meta.lifecycle as CatalogLifecycle;
 const catalogItem = catalogItems.find((item) => item.name === button.name);
 
 if (!catalogItem) {
@@ -102,6 +103,7 @@ export default function ButtonPage() {
 					<p className="text-muted-foreground text-sm">
 						Add the complete Button source with the shadcn CLI.
 					</p>
+					<PreviewInstallNotice lifecycle={lifecycle} />
 				</div>
 				<InstallCommand itemName={button.name} />
 			</section>

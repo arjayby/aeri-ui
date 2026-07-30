@@ -17,7 +17,13 @@ export function DocumentationNavigation({
 	const groups = [
 		{
 			label: "Getting Started",
-			links: [{ href: "/docs/", label: "Introduction" }],
+			links: [
+				{ href: "/docs/", label: "Introduction" },
+				{
+					href: "/docs/release-candidate",
+					label: "1.0 release candidate",
+				},
+			],
 		},
 		...(["component", "block"] as const).map((collection) => ({
 			label: collection === "component" ? "Components" : "Blocks",

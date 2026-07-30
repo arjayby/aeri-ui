@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { ContentPageHeader } from "@/components/content-page-header";
 import { CopyButton } from "@/components/copy-button";
 import { InstallCommand } from "@/components/install-command";
+import { PreviewInstallNotice } from "@/components/preview-install-notice";
 import {
 	catalogItems,
 	getRegistryItemByName,
@@ -142,6 +143,7 @@ export function CatalogItemPage({
 					<p className="text-muted-foreground text-sm">
 						Add the complete {catalogItem.title} source with the shadcn CLI.
 					</p>
+					<PreviewInstallNotice lifecycle={catalogItem.lifecycle} />
 				</div>
 				<InstallCommand itemName={catalogItem.name} />
 			</section>

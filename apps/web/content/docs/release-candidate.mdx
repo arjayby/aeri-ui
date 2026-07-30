@@ -1,0 +1,68 @@
+---
+title: Aeri UI 1.0 release candidate
+description: Evaluate the complete Launch Set and understand the gates that remain before a stable 1.0 release.
+---
+
+This is not a stable 1.0 release.
+
+The release candidate contains the complete Launch Set of eight Components and three Blocks. Every Registry Item remains a Preview Item while the public `@aeri-ui` namespace and the other maintainer controlled release gates are incomplete.
+
+## Install during directory review
+
+Until `@aeri-ui` is accepted into the shadcn Registry Directory, add the preview registry to `components.json`:
+
+```json
+{
+  "registries": {
+    "@aeri-ui": "https://aeriui.dev/r/{name}.json"
+  }
+}
+```
+
+You can then use the namespaced command:
+
+```bash
+npx shadcn@latest add @aeri-ui/button
+```
+
+For a one time install without namespace configuration, use the public payload directly:
+
+```bash
+npx shadcn@latest add https://aeriui.dev/r/button.json
+```
+
+Equivalent `pnpm dlx`, `yarn dlx`, and `bunx --bun` commands are available on every Item Page. Zero configuration namespace installation is part of the stable contract only after Registry Directory acceptance.
+
+## Launch Set
+
+The Components are Button, Tabs, Accordion, Switch, Tooltip, Input, Number Ticker, and Text Swap.
+
+The Blocks are Command Palette, File Upload, and Settings Form.
+
+Each Item Page presents the canonical address, lifecycle, install commands, complete Installed Source, dependency and client boundary details, accessibility behavior, performance notes, Consumer Theme guidance, compatibility, source link, and changelog.
+
+## Source ownership
+
+The shadcn CLI copies readable Installed Source into the Consumer Project under `components/aeri`. The Builder owns that copy and may inspect, edit, restyle, and version it. Aeri UI does not publish a runtime package that the Installed Source must keep synchronized with.
+
+## Support boundary
+
+The release candidate targets Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, shadcn with Base UI, and current evergreen browsers. It does not guarantee Pages Router, React 18, Tailwind CSS 3, Radix UI, React Aria, JavaScript only projects, or legacy browsers.
+
+Stable Items and actively used Deprecated Items receive coordinated security fixes. Product specific integrations, backend behavior, authentication, data persistence, and modifications made after installation remain the Consumer Project's responsibility.
+
+## Update behavior
+
+Installed Source never updates automatically and does not call Aeri UI for update checks. Builders choose when to inspect and apply compatible changes with shadcn or when to edit their copy directly.
+
+## Privacy
+
+Installed Source contains no Aeri UI telemetry, analytics, licensing checks, remote assets, or required calls to `aeriui.dev`. The Catalog uses only disclosed aggregate Vercel telemetry, which is optional and cannot affect Catalog, documentation, Live Preview, or registry behavior.
+
+## Migration guarantees
+
+Preview Item APIs may still change before directory acceptance. After an item becomes Stable, its canonical address remains permanent. Compatible changes may update that address, while a breaking redesign receives a separate major address and migration guide. Deprecated Items remain installable and documented except where legal or actively harmful security conditions require removal.
+
+## Remaining release gates
+
+GitHub private vulnerability reporting is enabled for the canonical repository. The maintainer must still confirm control of `aeriui.dev` and its DNS, complete the production deployment, test the private reporting flow, obtain `@aeri-ui` Registry Directory acceptance, and create the final signed 1.0 tag. The project must not claim a stable 1.0 release until every gate is complete.

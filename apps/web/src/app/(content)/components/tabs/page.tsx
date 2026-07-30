@@ -6,7 +6,8 @@ import { ContentPageHeader } from "@/components/content-page-header";
 import { CopyButton } from "@/components/copy-button";
 import { InstallCommand } from "@/components/install-command";
 import { LazyTabsPreview } from "@/components/lazy-tabs-preview";
-import { catalogItems } from "@/lib/catalog";
+import { PreviewInstallNotice } from "@/components/preview-install-notice";
+import { catalogItems, type CatalogLifecycle } from "@/lib/catalog";
 import { tabs, tabsSource } from "@/lib/registry";
 
 const documentation = tabs.docs
@@ -19,7 +20,7 @@ const documentation = tabs.docs
 	})
 	.filter((section) => section.heading !== "Installation");
 
-const lifecycle = tabs.meta.lifecycle as string;
+const lifecycle = tabs.meta.lifecycle as CatalogLifecycle;
 const catalogItem = catalogItems.find((item) => item.name === tabs.name);
 
 if (!catalogItem) {
@@ -95,6 +96,7 @@ export default function TabsPage() {
 					<p className="text-muted-foreground text-sm">
 						Add the complete Tabs source with the shadcn CLI.
 					</p>
+					<PreviewInstallNotice lifecycle={lifecycle} />
 				</div>
 				<InstallCommand itemName={tabs.name} />
 			</section>
