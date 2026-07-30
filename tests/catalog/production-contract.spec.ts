@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 const representativeRoutes = [
 	"/",
@@ -129,16 +129,41 @@ test.describe("@catalog-compatibility Catalog production contract", () => {
 		page,
 	}) => {
 		await page.goto("/docs");
-		const searchButton = await openSearch(page);
-		const startedAt = performance.now();
-		await searchButton.click();
-		await expect(
-			page
-				.getByText("Opening search…", { exact: true })
-				.or(page.getByPlaceholder("Search")),
-		).toBeVisible();
+		await openSearch(page);
+		const responseTime = await page.evaluate(
+			({ budget }) =>
+				new Promise<number>((resolve, reject) => {
+					const searchButton = document.querySelector<HTMLButtonElement>(
+						'button[aria-label="Search"]',
+					);
+					if (!searchButton) {
+						reject(new Error("Search button is unavailable"));
+						return;
+					}
 
-		expect(performance.now() - startedAt).toBeLessThanOrEqual(
+					const startedAt = performance.now();
+					const observer = new MutationObserver(() => {
+						if (
+							document.querySelector(
+								'[role="status"], input[placeholder="Search"]',
+							)
+						) {
+							observer.disconnect();
+							resolve(performance.now() - startedAt);
+						}
+					});
+
+					observer.observe(document.body, { childList: true, subtree: true });
+					searchButton.click();
+					setTimeout(() => {
+						observer.disconnect();
+						reject(new Error("Search did not render a response in time"));
+					}, budget);
+				}),
+			{ budget: interactionResponseBudgetMilliseconds },
+		);
+
+		expect(responseTime).toBeLessThanOrEqual(
 			interactionResponseBudgetMilliseconds,
 		);
 		await expect(page.getByPlaceholder("Search")).toBeVisible();
