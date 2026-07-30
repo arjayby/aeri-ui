@@ -1,9 +1,9 @@
-import { createServer } from "node:net";
+import { type ChildProcess, spawn } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
+import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn, type ChildProcess } from "node:child_process";
 import { chromium } from "@playwright/test";
 
 const repositoryRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -38,7 +38,16 @@ function getAvailablePort() {
 
 async function waitFor(url: string, process: ChildProcess) {
 	const deadline = Date.now() + 30_000;
+	let processError: Error | undefined;
+	process.once("error", (error) => {
+		processError = error;
+	});
 	while (Date.now() < deadline) {
+		if (processError) {
+			throw new Error(`Process failed before ${url} became available.`, {
+				cause: processError,
+			});
+		}
 		if (process.exitCode !== null) {
 			throw new Error(`Process exited before ${url} became available.`);
 		}
@@ -105,10 +114,13 @@ try {
 		const chrome = spawn(
 			chromium.executablePath(),
 			[
-				"--headless=new",
+				"--headless",
+				"--no-sandbox",
 				"--disable-gpu",
+				"--disable-dev-shm-usage",
 				"--no-first-run",
 				"--no-default-browser-check",
+				"--remote-debugging-address=127.0.0.1",
 				`--remote-debugging-port=${chromePort}`,
 				`--user-data-dir=${chromeProfile}`,
 			],
